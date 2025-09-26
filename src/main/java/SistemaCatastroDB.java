@@ -19,6 +19,9 @@ public class SistemaCatastroDB {
 
             CasaUnifamiliar casaJuan = new CasaUnifamiliar("Calle Hidalgo 10", 150.5, "CAT001", juanPerez, centro, 2);
 
+            // Crear un Edificio de ejemplo
+            Edificio edificioEjemplo = new Edificio("Av. Reforma 123", 800.0, "EDIF001", juanPerez, centro, 10);
+
             // 3. Establecer relaciones bidireccionales
             casaJuan.agregarHabitante(juanPerez);
             casaJuan.agregarHabitante(anaGomez);
@@ -28,10 +31,11 @@ public class SistemaCatastroDB {
             em.persist(juanPerez);
             em.persist(anaGomez);
             em.persist(casaJuan);
+            em.persist(edificioEjemplo);
 
             // 5. Confirmar la transacción
             em.getTransaction().commit();
-            System.out.println("✅ Datos guardados exitosamente.");
+            System.out.println("Datos guardados exitosamente.");
 
             // --- CONSULTAR DATOS ---
             System.out.println("\n--- Consultando Viviendas en la Colonia Centro ---");
@@ -43,6 +47,18 @@ public class SistemaCatastroDB {
                 System.out.println("Dirección: " + v.getDireccion());
                 System.out.println("Propietario: " + v.getPropietario().getNombre());
                 System.out.println("Habitantes: " + v.getHabitantes().size());
+            }
+
+            // --- CONSULTAR EDIFICIOS ---
+            System.out.println("\n--- Consultando Edificios ---");
+            TypedQuery<Edificio> queryEdificio = em.createQuery(
+                    "SELECT e FROM Edificio e", Edificio.class);
+            List<Edificio> edificios = queryEdificio.getResultList();
+
+            for (Edificio e : edificios) {
+                System.out.println("Dirección: " + e.getDireccion());
+                System.out.println("Propietario: " + e.getPropietario().getNombre());
+                System.out.println("Total departamentos: " + e.getTotalDepartamentos());
             }
 
         } finally {

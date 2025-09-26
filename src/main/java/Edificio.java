@@ -22,5 +22,20 @@ public class Edificio extends Vivienda {
         this.totalDepartamentos = totalDepartamentos;
         this.departamentos = new ArrayList<>();
     }
-    // Getters y Setters...
+
+    public int getTotalDepartamentos() {
+        return totalDepartamentos;
+    }
+
+    public void setTotalDepartamentos(int totalDepartamentos) {
+        this.totalDepartamentos = totalDepartamentos;
+    }
+
+    public List<Vivienda> getDepartamentos() {
+        return departamentos;
+    }
+
+    public void setDepartamentos(List<Vivienda> departamentos) {
+        this.departamentos = departamentos;
+    }
 }

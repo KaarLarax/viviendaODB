@@ -11,4 +11,12 @@ public class CasaUnifamiliar extends Vivienda {
         this.numeroPisos = numeroPisos;
     }
     // Getters y Setters...
+
+    public int getNumeroPisos() {
+        return numeroPisos;
+    }
+
+    public void setNumeroPisos(int numeroPisos) {
+        this.numeroPisos = numeroPisos;
+    }
 }
