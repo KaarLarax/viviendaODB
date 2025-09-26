@@ -14,8 +14,8 @@ public class SistemaCatastroDB {
 
             // 2. Crear y persistir objetos
             Colonia centro = new Colonia("Centro", "42000");
-            Persona juanPerez = new Persona("Juan Pérez", "PEPJ800101", true);
-            Persona anaGomez = new Persona("Ana Gómez", "GOMA900202", false);
+            Persona juanPerez = new Persona("Juan", "PEPJ800101", true, 65,"perez");
+            Persona anaGomez = new Persona("Ana", "GOMA900202", false,18,"gomez");
 
             CasaUnifamiliar casaJuan = new CasaUnifamiliar("Calle Hidalgo 10", 150.5, "CAT001", juanPerez, centro, 2);
 
