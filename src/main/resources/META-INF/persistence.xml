@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence">
+    <persistence-unit name="vivienda-db">
+        <provider>com.objectdb.jpa.Provider</provider>
+        <properties>
+            <property name="javax.persistence.jdbc.url" value="$objectdb/db/vivienda.odb"/>
+            <property name="javax.persistence.jdbc.user" value="admin"/>
+            <property name="javax.persistence.jdbc.password" value="admin"/>
+        </properties>
+    </persistence-unit>
+</persistence>
