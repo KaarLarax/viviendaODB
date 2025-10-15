@@ -54,4 +54,36 @@ public abstract class Vivienda {
     public Persona getPropietario() { return propietario; }
     public void setPropietario(Persona propietario) { this.propietario = propietario; }
     public List<Persona> getHabitantes() { return habitantes; }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public double getSuperficie() {
+        return superficie;
+    }
+
+    public void setSuperficie(double superficie) {
+        this.superficie = superficie;
+    }
+
+    public String getClaveCatastral() {
+        return claveCatastral;
+    }
+
+    public void setClaveCatastral(String claveCatastral) {
+        this.claveCatastral = claveCatastral;
+    }
+
+    public void setHabitantes(List<Persona> habitantes) {
+        this.habitantes = habitantes;
+    }
+
+    public Colonia getColonia() {
+        return colonia;
+    }
+
+    public void setColonia(Colonia colonia) {
+        this.colonia = colonia;
+    }
 }
