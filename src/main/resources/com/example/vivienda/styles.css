@@ -1,0 +1,47 @@
+/* styles.css */
+
+.root {
+    -fx-font-family: "Arial";
+    -fx-background-color: #f4f4f4;
+}
+
+.menu-bar {
+    -fx-background-color: #333;
+}
+
+.menu-bar .label {
+    -fx-text-fill: white;
+}
+
+.menu-item:focused {
+     -fx-background-color: #555;
+}
+
+.menu-item:focused .label {
+    -fx-text-fill: white;
+}
+
+.main-content {
+    -fx-padding: 20px;
+    -fx-background-color: white;
+    -fx-border-color: #ddd;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+
+.welcome-pane {
+    -fx-alignment: center;
+}
+
+.welcome-title {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-fill: #333;
+}
+
+.welcome-text {
+    -fx-font-size: 16px;
+    -fx-fill: #666;
+}
+
