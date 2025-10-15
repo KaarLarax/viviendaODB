@@ -40,4 +40,7 @@ public class Edificio extends Vivienda {
     public void setDepartamentos(List<Vivienda> departamentos) {
         this.departamentos = departamentos;
     }
+    public void agregarDepartamento(Vivienda departamento) {
+        this.departamentos.add(departamento);
+    }
 }

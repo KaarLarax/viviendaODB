@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+
+<GridPane alignment="CENTER" hgap="10" vgap="10" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/21" fx:controller="com.example.vivienda.view.EdificioViewController">
+    <Label text="Dirección:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+    <TextField fx:id="direccionField" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+    <Label text="Superficie:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+    <TextField fx:id="superficieField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+    <Label text="Clave Catastral:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+    <TextField fx:id="claveCatastralField" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+    <Label text="Número de Apartamentos:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+    <TextField fx:id="numApartamentosField" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+    <HBox spacing="10" GridPane.columnSpan="2" GridPane.columnIndex="0" GridPane.rowIndex="4">
+        <Button onAction="#handleCreate" text="Crear" />
+        <Button onAction="#handleUpdate" text="Actualizar" />
+        <Button onAction="#handleDelete" text="Eliminar" />
+    </HBox>
+    <TableView fx:id="edificioTable" prefHeight="200.0" GridPane.columnSpan="2" GridPane.columnIndex="0" GridPane.rowIndex="5">
+        <columns>
+            <TableColumn fx:id="idColumn" prefWidth="75.0" text="ID" />
+            <TableColumn fx:id="direccionColumn" prefWidth="150.0" text="Dirección" />
+            <TableColumn fx:id="superficieColumn" prefWidth="100.0" text="Superficie" />
+            <TableColumn fx:id="claveCatastralColumn" prefWidth="150.0" text="Clave Catastral" />
+            <TableColumn fx:id="numApartamentosColumn" prefWidth="150.0" text="Nº Apartamentos" />
+        </columns>
+    </TableView>
+    <columnConstraints>
+        <ColumnConstraints />
+        <ColumnConstraints />
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints />
+        <RowConstraints />
+        <RowConstraints />
+        <RowConstraints />
+        <RowConstraints />
+        <RowConstraints />
+    </rowConstraints>
+</GridPane>
+

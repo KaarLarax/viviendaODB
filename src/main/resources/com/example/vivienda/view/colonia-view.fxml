@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+
+<GridPane alignment="CENTER" hgap="10" vgap="10" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/21" fx:controller="com.example.vivienda.view.ColoniaViewController">
+    <Label text="Nombre:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+    <TextField fx:id="nombreField" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+    <Label text="Código Postal:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+    <TextField fx:id="codigoPostalField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+    <HBox spacing="10" GridPane.columnSpan="2" GridPane.columnIndex="0" GridPane.rowIndex="2">
+        <Button onAction="#handleCreate" text="Crear" />
+        <Button onAction="#handleUpdate" text="Actualizar" />
+        <Button onAction="#handleDelete" text="Eliminar" />
+    </HBox>
+    <TableView fx:id="coloniaTable" prefHeight="200.0" GridPane.columnSpan="2" GridPane.columnIndex="0" GridPane.rowIndex="3">
+        <columns>
+            <TableColumn fx:id="idColumn" prefWidth="75.0" text="ID" />
+            <TableColumn fx:id="nombreColumn" prefWidth="150.0" text="Nombre" />
+            <TableColumn fx:id="codigoPostalColumn" prefWidth="150.0" text="Código Postal" />
+        </columns>
+    </TableView>
+    <columnConstraints>
+        <ColumnConstraints />
+        <ColumnConstraints />
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints />
+        <RowConstraints />
+        <RowConstraints />
+        <RowConstraints />
+    </rowConstraints>
+</GridPane>
+

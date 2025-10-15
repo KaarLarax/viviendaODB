@@ -53,4 +53,8 @@ public class Persona {
     public void setEsJefeDeFamilia(boolean esJefeDeFamilia) { this.esJefeDeFamilia = esJefeDeFamilia; }
     public Vivienda getVivienda() { return vivienda; }
     public void setVivienda(Vivienda vivienda) { this.vivienda = vivienda; }
+
+    public void setId(long id) {
+        this.id = id;
+    }
 }
