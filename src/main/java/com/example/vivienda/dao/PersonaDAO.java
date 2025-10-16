@@ -9,4 +9,6 @@ public interface PersonaDAO {
     void update(Persona persona);
     void delete(Persona persona);
     void deleteById(Long id);
+    int getNumeroDePropiedades(Persona persona);
+    Persona findJefeDeFamiliaByApellidos(String apellidos);
 }

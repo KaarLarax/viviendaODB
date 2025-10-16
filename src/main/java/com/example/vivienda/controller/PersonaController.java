@@ -35,5 +35,12 @@ public class PersonaController {
     public void eliminarPersonaPorId(Long id) {
         personaDAO.deleteById(id);
     }
-}
 
+    public int obtenerNumeroDePropiedades(Persona persona) {
+        return personaDAO.getNumeroDePropiedades(persona);
+    }
+
+    public Persona obtenerJefeDeFamiliaPorApellidos(String apellidos) {
+        return personaDAO.findJefeDeFamiliaByApellidos(apellidos);
+    }
+}

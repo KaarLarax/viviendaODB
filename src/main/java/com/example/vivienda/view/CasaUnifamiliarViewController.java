@@ -1,94 +1,140 @@
 package com.example.vivienda.view;
 
-import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.scene.input.MouseEvent;
+import com.example.vivienda.controller.CasaUnifamiliarController;
+import com.example.vivienda.controller.ColoniaController;
+import com.example.vivienda.controller.PersonaController;
+import com.example.vivienda.model.CasaUnifamiliar;
+import com.example.vivienda.model.Colonia;
+import com.example.vivienda.model.Persona;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import com.example.vivienda.model.CasaUnifamiliar;
-import com.example.vivienda.dao.CasaUnifamiliarDAO;
-import com.example.vivienda.dao.CasaUnifamiliarDAOImpl;
+import javafx.fxml.FXML;
+import javafx.scene.control.*;
 
 public class CasaUnifamiliarViewController {
-    @FXML private TextField direccionField;
-    @FXML private TextField superficieField;
-    @FXML private TextField claveCatastralField;
-    @FXML private TextField numeroPisosField;
-
-    @FXML private TableView<CasaUnifamiliar> casaTable;
-    @FXML private TableColumn<CasaUnifamiliar, String> direccionColumn;
+    @FXML private TextField txtDireccion;
+    @FXML private TextField txtSuperficie;
+    @FXML private TextField txtClaveCatastral;
+    @FXML private TextField txtNumeroPisos;
+    @FXML private ComboBox<Colonia> comboColonia;
+    @FXML private ComboBox<Persona> comboPropietario;
+    @FXML private TableView<CasaUnifamiliar> casaUnifamiliarTable;
     @FXML private TableColumn<CasaUnifamiliar, String> superficieColumn;
     @FXML private TableColumn<CasaUnifamiliar, String> claveCatastralColumn;
-    @FXML private TableColumn<CasaUnifamiliar, String> numeroPisosColumn;
+    @FXML private TableColumn<CasaUnifamiliar, Integer> numeroPisosColumn;
+    @FXML private Button btnAgregar;
+    @FXML private Button btnEditar;
+    @FXML private Button btnEliminar;
+    @FXML private Button btnVolver;
 
-    private final CasaUnifamiliarDAO casaDAO = new CasaUnifamiliarDAOImpl();
-    private final ObservableList<CasaUnifamiliar> casaList = FXCollections.observableArrayList();
+    private final CasaUnifamiliarController casaDAO = new CasaUnifamiliarController();
+    private final ColoniaController coloniaDAO = new ColoniaController();
+    private final PersonaController personaDAO = new PersonaController();
+    private ObservableList<CasaUnifamiliar> casasList;
+    private ObservableList<Colonia> coloniasList;
+    private ObservableList<Persona> personasList;
 
     @FXML
     public void initialize() {
-        direccionColumn.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getDireccion()));
-        superficieColumn.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(String.valueOf(cellData.getValue().getSuperficie())));
-        claveCatastralColumn.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getClaveCatastral()));
-        numeroPisosColumn.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(String.valueOf(cellData.getValue().getNumeroPisos())));
-        casaTable.setItems(casaList);
-        loadCasas();
+        // Configurar columnas
+        superficieColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(String.valueOf(data.getValue().getSuperficie())));
+        claveCatastralColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().getClaveCatastral()));
+        numeroPisosColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().getNumeroPisos()));
+
+        // Cargar datos
+        casasList = FXCollections.observableArrayList(casaDAO.obtenerTodasLasCasas());
+        casaUnifamiliarTable.setItems(casasList);
+
+        coloniasList = FXCollections.observableArrayList(coloniaDAO.obtenerTodasLasColonias());
+        comboColonia.setItems(coloniasList);
+
+        personasList = FXCollections.observableArrayList(personaDAO.obtenerTodasLasPersonas());
+        comboPropietario.setItems(personasList);
+
+        // Selección en tabla
+        casaUnifamiliarTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> mostrarCasa(newSel));
     }
 
-    private void loadCasas() {
-        casaList.setAll(casaDAO.readAll());
-    }
-
-    @FXML
-    private void onCreate() {
-        CasaUnifamiliar casa = new CasaUnifamiliar();
-        casa.setDireccion(direccionField.getText());
-        casa.setSuperficie(Double.parseDouble(superficieField.getText()));
-        casa.setClaveCatastral(claveCatastralField.getText());
-        casa.setNumeroPisos(Integer.parseInt(numeroPisosField.getText()));
-        casaDAO.create(casa);
-        loadCasas();
-        clearFields();
-    }
-
-    @FXML
-    private void onUpdate() {
-        CasaUnifamiliar selected = casaTable.getSelectionModel().getSelectedItem();
-        if (selected != null) {
-            selected.setDireccion(direccionField.getText());
-            selected.setSuperficie(Double.parseDouble(superficieField.getText()));
-            selected.setClaveCatastral(claveCatastralField.getText());
-            selected.setNumeroPisos(Integer.parseInt(numeroPisosField.getText()));
-            casaDAO.update(selected);
-            loadCasas();
-            clearFields();
+    private void mostrarCasa(CasaUnifamiliar casa) {
+        if (casa != null) {
+            txtDireccion.setText(casa.getDireccion());
+            txtSuperficie.setText(String.valueOf(casa.getSuperficie()));
+            txtClaveCatastral.setText(casa.getClaveCatastral());
+            txtNumeroPisos.setText(String.valueOf(casa.getNumeroPisos()));
+            comboColonia.setValue(casa.getColonia());
+            comboPropietario.setValue(casa.getPropietario());
+        } else {
+            txtDireccion.clear();
+            txtSuperficie.clear();
+            txtClaveCatastral.clear();
+            txtNumeroPisos.clear();
+            comboColonia.setValue(null);
+            comboPropietario.setValue(null);
         }
     }
 
     @FXML
-    private void onDelete() {
-        CasaUnifamiliar selected = casaTable.getSelectionModel().getSelectedItem();
-        if (selected != null) {
-            casaDAO.delete(selected);
-            loadCasas();
-            clearFields();
+    private void onAgregar() {
+        try {
+            String direccion = txtDireccion.getText();
+            double superficie = Double.parseDouble(txtSuperficie.getText());
+            String clave = txtClaveCatastral.getText();
+            int pisos = Integer.parseInt(txtNumeroPisos.getText());
+            Colonia colonia = comboColonia.getValue();
+            Persona propietario = comboPropietario.getValue();
+            CasaUnifamiliar casa = new CasaUnifamiliar(direccion, superficie, clave, propietario, colonia, pisos);
+            casaDAO.crearCasa(casa);
+            casasList.add(casa);
+            limpiarCampos();
+        } catch (Exception e) {
+            mostrarAlerta("Error al agregar", "Verifica los datos ingresados.");
         }
     }
 
     @FXML
-    private void onSelect(MouseEvent event) {
-        CasaUnifamiliar selected = casaTable.getSelectionModel().getSelectedItem();
-        if (selected != null) {
-            direccionField.setText(selected.getDireccion());
-            superficieField.setText(String.valueOf(selected.getSuperficie()));
-            claveCatastralField.setText(selected.getClaveCatastral());
-            numeroPisosField.setText(String.valueOf(selected.getNumeroPisos()));
+    private void onEditar() {
+        CasaUnifamiliar seleccionada = casaUnifamiliarTable.getSelectionModel().getSelectedItem();
+        if (seleccionada != null) {
+            try {
+                seleccionada.setDireccion(txtDireccion.getText());
+                seleccionada.setSuperficie(Double.parseDouble(txtSuperficie.getText()));
+                seleccionada.setClaveCatastral(txtClaveCatastral.getText());
+                seleccionada.setNumeroPisos(Integer.parseInt(txtNumeroPisos.getText()));
+                seleccionada.setColonia(comboColonia.getValue());
+                seleccionada.setPropietario(comboPropietario.getValue());
+                casaDAO.actualizarCasa(seleccionada);
+                casaUnifamiliarTable.refresh();
+                limpiarCampos();
+            } catch (Exception e) {
+                mostrarAlerta("Error al editar", "Verifica los datos ingresados.");
+            }
         }
     }
 
-    private void clearFields() {
-        direccionField.clear();
-        superficieField.clear();
-        claveCatastralField.clear();
-        numeroPisosField.clear();
+    @FXML
+    private void onEliminar() {
+        CasaUnifamiliar seleccionada = casaUnifamiliarTable.getSelectionModel().getSelectedItem();
+        if (seleccionada != null) {
+            casaDAO.eliminarCasa(seleccionada);
+            casasList.remove(seleccionada);
+            limpiarCampos();
+        }
+    }
+
+    @FXML
+    private void onVolver() {
+        // Implementa la lógica para volver al menú principal o cerrar la ventana
+    }
+
+    private void limpiarCampos() {
+        mostrarCasa(null);
+    }
+
+    private void mostrarAlerta(String titulo, String mensaje) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(titulo);
+        alert.setHeaderText(null);
+        alert.setContentText(mensaje);
+        alert.showAndWait();
     }
 }
