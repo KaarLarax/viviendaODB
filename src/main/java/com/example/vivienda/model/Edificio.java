@@ -43,4 +43,9 @@ public class Edificio extends Vivienda {
         this.departamentos.add(departamento);
         departamento.setEdificio(this);
     }
+
+    @Override
+    public String toString() {
+        return getDireccion();
+    }
 }

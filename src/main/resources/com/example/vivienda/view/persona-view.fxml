@@ -23,10 +23,12 @@
     <Label text="Jefe de Familia:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
     <CheckBox fx:id="esJefeDeFamiliaCheckBox" GridPane.columnIndex="1" GridPane.rowIndex="4" />
     <HBox spacing="10" GridPane.columnSpan="2" GridPane.columnIndex="0" GridPane.rowIndex="5">
-        <Button onAction="#handleCreate" text="Crear" />
-        <Button onAction="#handleUpdate" text="Actualizar" />
-        <Button onAction="#handleDelete" text="Eliminar" />
+        <Button fx:id="crearButton" onAction="#handleCreate" text="Crear" />
+        <Button fx:id="actualizarButton" onAction="#handleUpdate" text="Actualizar" />
+        <Button fx:id="eliminarButton" onAction="#handleDelete" text="Eliminar" />
+        <Button fx:id="limpiarButton" onAction="#handleLimpiar" text="Limpiar" />
     </HBox>
+
     <TableView fx:id="personaTable" prefHeight="200.0" GridPane.columnSpan="2" GridPane.columnIndex="0" GridPane.rowIndex="6">
         <columns>
             <TableColumn fx:id="idColumn" prefWidth="75.0" text="ID" />

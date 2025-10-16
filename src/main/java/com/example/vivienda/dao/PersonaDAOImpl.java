@@ -1,16 +1,16 @@
 package com.example.vivienda.dao;
 
 import com.example.vivienda.model.Persona;
+import com.example.vivienda.model.SistemaCatastroDB;
+
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
 import java.util.List;
 
 public class PersonaDAOImpl implements PersonaDAO {
-    private static final EntityManagerFactory emf = Persistence.createEntityManagerFactory("objectdb:db/vivienda.odb");
+    private final SistemaCatastroDB sistema = SistemaCatastroDB.getInstance();
 
     private EntityManager getEntityManager() {
-        return emf.createEntityManager();
+        return sistema.getEntityManager();
     }
 
     @Override
@@ -116,11 +116,17 @@ public class PersonaDAOImpl implements PersonaDAO {
     public Persona findJefeDeFamiliaByApellidos(String apellidos) {
         EntityManager em = getEntityManager();
         try {
-            return em.createQuery("SELECT p FROM Persona p WHERE p.apellidos = :apellidos AND p.esJefeDeFamilia = true", Persona.class)
+            List<Persona> resultados = em.createQuery(
+                            "SELECT p FROM Persona p WHERE p.familia IS NOT NULL AND p.familia.apellidos = :apellidos AND p.esJefeDeFamilia = true",
+                            Persona.class)
                     .setParameter("apellidos", apellidos)
-                    .getResultStream().findFirst().orElse(null);
+                    .getResultList();
+
+            return resultados.isEmpty() ? null : resultados.get(0);
         } finally {
             em.close();
         }
     }
+
+
 }

@@ -2,7 +2,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<GridPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.vivienda.view.CasaUnifamiliarViewController" hgap="15" vgap="15" alignment="CENTER" styleClass="main-pane">
+<GridPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.vivienda.view.CasaUnifamiliarViewController" hgap="15" vgap="15" alignment="CENTER" styleClass="main-pane" style="-fx-padding: 20;">
     <Label text="Gestión de Casa Unifamiliar" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.columnSpan="2" styleClass="main-title" />
     <!-- Campo Dirección -->
     <Label text="Dirección:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
@@ -15,24 +15,44 @@
     <Label text="Nº Pisos:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
     <TextField fx:id="txtNumeroPisos" promptText="Ingrese número de pisos" GridPane.columnIndex="1" GridPane.rowIndex="4" />
     <Label text="Colonia:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
-    <ComboBox fx:id="comboColonia" promptText="Seleccione colonia" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+    <ComboBox fx:id="comboColonia" promptText="Seleccione colonia" GridPane.columnIndex="1" GridPane.rowIndex="5" prefWidth="200" />
     <Label text="Propietario:" GridPane.columnIndex="0" GridPane.rowIndex="6" />
-    <ComboBox fx:id="comboPropietario" promptText="Seleccione propietario" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+    <ComboBox fx:id="comboPropietario" promptText="Seleccione propietario" GridPane.columnIndex="1" GridPane.rowIndex="6" prefWidth="200" />
+
+    <!-- Botones -->
+    <HBox spacing="10" alignment="CENTER" GridPane.columnIndex="0" GridPane.rowIndex="7" GridPane.columnSpan="2">
+        <Button fx:id="btnAgregar" text="Crear" onAction="#onAgregar" />
+        <Button fx:id="btnEditar" text="Actualizar" onAction="#onEditar" />
+        <Button fx:id="btnEliminar" text="Eliminar" onAction="#onEliminar" />
+        <Button fx:id="btnLimpiar" text="Limpiar" onAction="#onLimpiar" />
+    </HBox>
+
     <!-- Tabla -->
-    <TableView fx:id="casaUnifamiliarTable" GridPane.columnIndex="0" GridPane.rowIndex="7" GridPane.columnSpan="2" prefHeight="250" prefWidth="400">
+    <TableView fx:id="casaUnifamiliarTable" GridPane.columnIndex="0" GridPane.rowIndex="8" GridPane.columnSpan="2" prefHeight="250" prefWidth="800">
         <columns>
-            <TableColumn fx:id="direccionColumn" text="Dirección" />
-            <TableColumn fx:id="superficieColumn" text="Superficie" />
-            <TableColumn fx:id="claveCatastralColumn" text="Clave Catastral" />
-            <TableColumn fx:id="numeroPisosColumn" text="Nº Pisos" />
-            <TableColumn fx:id="coloniaColumn" text="Colonia" />
+            <TableColumn fx:id="idColumn" text="ID" prefWidth="50" />
+            <TableColumn fx:id="direccionColumn" text="Dirección" prefWidth="150" />
+            <TableColumn fx:id="superficieColumn" text="Superficie" prefWidth="100" />
+            <TableColumn fx:id="claveCatastralColumn" text="Clave Catastral" prefWidth="130" />
+            <TableColumn fx:id="numeroPisosColumn" text="Nº Pisos" prefWidth="80" />
+            <TableColumn fx:id="coloniaColumn" text="Colonia" prefWidth="120" />
+            <TableColumn fx:id="propietarioColumn" text="Propietario" prefWidth="170" />
         </columns>
     </TableView>
-    <!-- Botones -->
-    <HBox spacing="10" alignment="CENTER" GridPane.columnIndex="0" GridPane.rowIndex="8" GridPane.columnSpan="2">
-        <Button fx:id="btnAgregar" text="Agregar" onAction="#onAgregar" />
-        <Button fx:id="btnEditar" text="Editar" onAction="#onEditar" />
-        <Button fx:id="btnEliminar" text="Eliminar" onAction="#onEliminar" />
-        <Button fx:id="btnVolver" text="Volver" onAction="#onVolver" />
-    </HBox>
+
+    <columnConstraints>
+        <ColumnConstraints />
+        <ColumnConstraints />
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints />
+        <RowConstraints />
+        <RowConstraints />
+        <RowConstraints />
+        <RowConstraints />
+        <RowConstraints />
+        <RowConstraints />
+        <RowConstraints />
+        <RowConstraints />
+    </rowConstraints>
 </GridPane>

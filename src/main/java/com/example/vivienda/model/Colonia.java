@@ -59,4 +59,9 @@ public class Colonia {
     public void setViviendas(List<Vivienda> viviendas) {
         this.viviendas = viviendas;
     }
+
+    @Override
+    public String toString() {
+        return nombre;
+    }
 }

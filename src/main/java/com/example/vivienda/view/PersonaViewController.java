@@ -1,15 +1,14 @@
 package com.example.vivienda.view;
 
 import com.example.vivienda.controller.PersonaController;
+import com.example.vivienda.model.Familia;
 import com.example.vivienda.model.Persona;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import java.util.List;
 
 public class PersonaViewController {
 
@@ -40,68 +39,110 @@ public class PersonaViewController {
     @FXML
     private TableColumn<Persona, Integer> numPropiedadesColumn;
 
+    // 🔹 Botones con fx:id
+    @FXML
+    private Button crearButton;
+    @FXML
+    private Button actualizarButton;
+    @FXML
+    private Button eliminarButton;
+    @FXML
+    private Button limpiarButton;
+
     private final PersonaController personaController = new PersonaController();
 
     @FXML
     public void initialize() {
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         nombreColumn.setCellValueFactory(new PropertyValueFactory<>("nombre"));
-        apellidosColumn.setCellValueFactory(new PropertyValueFactory<>("apellidos"));
+        apellidosColumn.setCellValueFactory(cellData -> {
+            Familia f = cellData.getValue().getFamilia();
+            return new SimpleStringProperty(f != null ? f.getApellidos() : "");
+        });
         rfcColumn.setCellValueFactory(new PropertyValueFactory<>("rfc"));
         edadColumn.setCellValueFactory(new PropertyValueFactory<>("edad"));
         esJefeDeFamiliaColumn.setCellValueFactory(new PropertyValueFactory<>("esJefeDeFamilia"));
-        numPropiedadesColumn.setCellValueFactory(cellData -> {
-            if (cellData.getValue() != null) {
-                return new SimpleIntegerProperty(personaController.obtenerNumeroDePropiedades(cellData.getValue())).asObject();
-            } else {
-                return new SimpleIntegerProperty(0).asObject();
-            }
-        });
+        numPropiedadesColumn.setCellValueFactory(cellData ->
+                new SimpleIntegerProperty(personaController.obtenerNumeroDePropiedades(cellData.getValue())).asObject()
+        );
+
         loadPersonas();
 
+        // 🔹 Estado inicial de botones
+        crearButton.setDisable(false);
+        actualizarButton.setDisable(true);
+        eliminarButton.setDisable(true);
+
+        // 🔹 Cuando se selecciona una fila
         personaTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
                 onTableSelection(newSelection);
+                crearButton.setDisable(true);
+                actualizarButton.setDisable(false);
+                eliminarButton.setDisable(false);
+            } else {
+                crearButton.setDisable(false);
+                actualizarButton.setDisable(true);
+                eliminarButton.setDisable(true);
             }
         });
     }
 
     private void loadPersonas() {
-        personaTable.getItems().setAll(personaController.obtenerTodasLasPersonas());
+        List<Persona> personas = personaController.obtenerTodasLasPersonas();
+        personaTable.getItems().setAll(personas);
     }
 
     @FXML
     private void handleCreate() {
-        if (!validateInput()) {
-            return;
-        }
+        if (!validateInput()) return;
+
+        Familia familia = new Familia(apellidosField.getText());
         Persona persona = new Persona(
                 nombreField.getText(),
                 rfcField.getText(),
                 esJefeDeFamiliaCheckBox.isSelected(),
                 Integer.parseInt(edadField.getText()),
-                apellidosField.getText()
+                familia
         );
+
         personaController.crearPersona(persona);
         loadPersonas();
         clearFields();
+
+        // 🔹 Restaurar botones y limpiar selección
+        crearButton.setDisable(false);
+        actualizarButton.setDisable(true);
+        eliminarButton.setDisable(true);
+        personaTable.getSelectionModel().clearSelection();
     }
 
     @FXML
     private void handleUpdate() {
-        if (!validateInput()) {
-            return;
-        }
+        if (!validateInput()) return;
+
         Persona selectedPersona = personaTable.getSelectionModel().getSelectedItem();
         if (selectedPersona != null) {
             selectedPersona.setNombre(nombreField.getText());
-            selectedPersona.setApellidos(apellidosField.getText());
             selectedPersona.setRfc(rfcField.getText());
             selectedPersona.setEdad(Integer.parseInt(edadField.getText()));
             selectedPersona.setEsJefeDeFamilia(esJefeDeFamiliaCheckBox.isSelected());
+
+            if (selectedPersona.getFamilia() == null) {
+                selectedPersona.setFamilia(new Familia(apellidosField.getText()));
+            } else {
+                selectedPersona.getFamilia().setApellidos(apellidosField.getText());
+            }
+
             personaController.actualizarPersona(selectedPersona);
             loadPersonas();
             clearFields();
+
+            // 🔹 Restaurar botones y limpiar selección
+            crearButton.setDisable(false);
+            actualizarButton.setDisable(true);
+            eliminarButton.setDisable(true);
+            personaTable.getSelectionModel().clearSelection();
         }
     }
 
@@ -112,15 +153,37 @@ public class PersonaViewController {
             personaController.eliminarPersonaPorId(selectedPersona.getId());
             loadPersonas();
             clearFields();
+
+            // 🔹 Restaurar botones y limpiar selección
+            crearButton.setDisable(false);
+            actualizarButton.setDisable(true);
+            eliminarButton.setDisable(true);
+            personaTable.getSelectionModel().clearSelection();
         }
+    }
+    @FXML
+    private void handleLimpiar() {
+
+        clearFields();
+        personaTable.getSelectionModel().clearSelection();
+
+        // Restaurar botones
+        crearButton.setDisable(false);
+        actualizarButton.setDisable(true);
+        eliminarButton.setDisable(true);
     }
 
     private void onTableSelection(Persona selectedPersona) {
         nombreField.setText(selectedPersona.getNombre());
-        apellidosField.setText(selectedPersona.getApellidos());
         rfcField.setText(selectedPersona.getRfc());
         edadField.setText(String.valueOf(selectedPersona.getEdad()));
         esJefeDeFamiliaCheckBox.setSelected(selectedPersona.isEsJefeDeFamilia());
+
+        if (selectedPersona.getFamilia() != null) {
+            apellidosField.setText(selectedPersona.getFamilia().getApellidos());
+        } else {
+            apellidosField.clear();
+        }
     }
 
     private boolean validateInput() {
@@ -148,14 +211,11 @@ public class PersonaViewController {
         if (errorMessage.isEmpty()) {
             return true;
         } else {
-            // Show the error message.
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Campos no válidos");
             alert.setHeaderText("Por favor, corrija los campos no válidos");
             alert.setContentText(errorMessage);
-
             alert.showAndWait();
-
             return false;
         }
     }
@@ -168,4 +228,3 @@ public class PersonaViewController {
         esJefeDeFamiliaCheckBox.setSelected(false);
     }
 }
-

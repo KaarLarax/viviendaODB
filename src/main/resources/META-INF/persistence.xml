@@ -3,7 +3,8 @@
     <persistence-unit name="vivienda-db">
         <provider>com.objectdb.jpa.Provider</provider>
         <properties>
-            <property name="javax.persistence.jdbc.url" value="$objectdb/db/vivienda.odb"/>
+            <!-- URL correcta para ObjectDB: use el prefijo objectdb: -->
+            <property name="javax.persistence.jdbc.url" value="objectdb:db/vivienda.odb"/>
             <property name="javax.persistence.jdbc.user" value="admin"/>
             <property name="javax.persistence.jdbc.password" value="admin"/>
         </properties>

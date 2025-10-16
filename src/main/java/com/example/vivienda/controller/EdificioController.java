@@ -12,8 +12,13 @@ public class EdificioController {
         this.edificioDAO = new EdificioDAOImpl();
     }
 
-    public void crearEdificio(Edificio edificio) {
+    // Crear edificio solo si la claveCatastral no existe
+    public boolean crearEdificio(Edificio edificio) {
+        if (claveCatastralExiste(edificio.getClaveCatastral())) {
+            return false;
+        }
         edificioDAO.create(edificio);
+        return true;
     }
 
     public Edificio obtenerEdificio(Long id) {
@@ -35,5 +40,10 @@ public class EdificioController {
     public void eliminarEdificioPorId(Long id) {
         edificioDAO.deleteById(id);
     }
-}
 
+    // Método auxiliar para verificar duplicados
+    private boolean claveCatastralExiste(String claveCatastral) {
+        return edificioDAO.readAll().stream()
+                .anyMatch(e -> e.getClaveCatastral().equals(claveCatastral));
+    }
+}

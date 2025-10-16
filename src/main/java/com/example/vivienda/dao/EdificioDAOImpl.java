@@ -1,16 +1,16 @@
 package com.example.vivienda.dao;
 
 import com.example.vivienda.model.Edificio;
+import com.example.vivienda.model.SistemaCatastroDB;
+
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
 import java.util.List;
 
 public class EdificioDAOImpl implements EdificioDAO {
-    private static final EntityManagerFactory emf = Persistence.createEntityManagerFactory("objectdb:db/vivienda.odb");
+    private final SistemaCatastroDB sistema = SistemaCatastroDB.getInstance();
 
     private EntityManager getEntityManager() {
-        return emf.createEntityManager();
+        return sistema.getEntityManager();
     }
 
     @Override
@@ -18,6 +18,8 @@ public class EdificioDAOImpl implements EdificioDAO {
         EntityManager em = getEntityManager();
         try {
             em.getTransaction().begin();
+
+            // Si el edificio tuviera relaciones a otras entidades, asegurarlas aquí (por ejemplo colonia)
             em.persist(edificio);
             em.getTransaction().commit();
         } catch (Exception e) {
@@ -99,5 +101,3 @@ public class EdificioDAOImpl implements EdificioDAO {
         }
     }
 }
-
-

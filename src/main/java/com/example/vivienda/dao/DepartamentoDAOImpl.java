@@ -14,19 +14,59 @@ public class DepartamentoDAOImpl implements DepartamentoDAO {
     @Override
     public void agregarDepartamento(Departamento departamento) {
         EntityManager em = sistemaCatastroDB.getEntityManager();
-        em.getTransaction().begin();
-        em.persist(departamento);
-        em.getTransaction().commit();
-        em.close();
+        try {
+            em.getTransaction().begin();
+
+            // Hacer merge de las entidades relacionadas para asegurar que estén gestionadas
+            if (departamento.getEdificio() != null) {
+                departamento.setEdificio(em.merge(departamento.getEdificio()));
+            }
+            if (departamento.getColonia() != null) {
+                departamento.setColonia(em.merge(departamento.getColonia()));
+            }
+            if (departamento.getPropietario() != null) {
+                departamento.setPropietario(em.merge(departamento.getPropietario()));
+            }
+
+            em.persist(departamento);
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw e;
+        } finally {
+            em.close();
+        }
     }
 
     @Override
     public void actualizarDepartamento(Departamento departamento) {
         EntityManager em = sistemaCatastroDB.getEntityManager();
-        em.getTransaction().begin();
-        em.merge(departamento);
-        em.getTransaction().commit();
-        em.close();
+        try {
+            em.getTransaction().begin();
+
+            // Asegurar que las entidades relacionadas estén gestionadas antes de merge del departamento
+            if (departamento.getEdificio() != null) {
+                departamento.setEdificio(em.merge(departamento.getEdificio()));
+            }
+            if (departamento.getColonia() != null) {
+                departamento.setColonia(em.merge(departamento.getColonia()));
+            }
+            if (departamento.getPropietario() != null) {
+                departamento.setPropietario(em.merge(departamento.getPropietario()));
+            }
+
+            em.merge(departamento);
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw e;
+        } finally {
+            em.close();
+        }
     }
 
     @Override
@@ -52,10 +92,15 @@ public class DepartamentoDAOImpl implements DepartamentoDAO {
     @Override
     public List<Departamento> obtenerTodosLosDepartamentos() {
         EntityManager em = sistemaCatastroDB.getEntityManager();
-        TypedQuery<Departamento> query = em.createQuery("SELECT d FROM Departamento d", Departamento.class);
+        TypedQuery<Departamento> query = em.createQuery(
+            "SELECT d FROM Departamento d " +
+            "LEFT JOIN FETCH d.edificio " +
+            "LEFT JOIN FETCH d.colonia " +
+            "LEFT JOIN FETCH d.propietario " +
+            "LEFT JOIN FETCH d.propietario.familia",
+            Departamento.class);
         List<Departamento> departamentos = query.getResultList();
         em.close();
         return departamentos;
     }
 }
-

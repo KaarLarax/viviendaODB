@@ -1,16 +1,18 @@
 package com.example.vivienda.dao;
 
 import com.example.vivienda.model.CasaUnifamiliar;
+import com.example.vivienda.model.SistemaCatastroDB;
+import com.example.vivienda.model.Persona;
+import com.example.vivienda.model.Colonia;
+
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
 import java.util.List;
 
 public class CasaUnifamiliarDAOImpl implements CasaUnifamiliarDAO {
-    private static final EntityManagerFactory emf = Persistence.createEntityManagerFactory("objectdb:db/vivienda.odb");
+    private final SistemaCatastroDB sistema = SistemaCatastroDB.getInstance();
 
     private EntityManager getEntityManager() {
-        return emf.createEntityManager();
+        return sistema.getEntityManager();
     }
 
     @Override
@@ -18,7 +20,43 @@ public class CasaUnifamiliarDAOImpl implements CasaUnifamiliarDAO {
         EntityManager em = getEntityManager();
         try {
             em.getTransaction().begin();
+
+            // Gestionar colonia
+            Colonia colonia = casa.getColonia();
+            if (colonia != null) {
+                if (colonia.getId() != 0) {
+                    colonia = em.find(Colonia.class, colonia.getId());
+                }
+                if (colonia == null) {
+                    colonia = em.merge(casa.getColonia());
+                }
+                casa.setColonia(colonia);
+            }
+
+            // Gestionar propietario: intentar encontrar persona gestionada por id
+            Persona propietario = casa.getPropietario();
+            Persona managedPropietario = null;
+            if (propietario != null) {
+                if (propietario.getId() != 0) {
+                    managedPropietario = em.find(Persona.class, propietario.getId());
+                }
+                if (managedPropietario == null) {
+                    managedPropietario = em.merge(propietario);
+                }
+                // No establecer la vivienda del managedPropietario todavía, lo haremos después de persist
+                casa.setPropietario(managedPropietario);
+            }
+
             em.persist(casa);
+            em.flush(); // Asegura que casa tenga id y esté gestionada
+
+            // Ahora establecer la referencia inversa y merge si es necesario
+            if (managedPropietario != null) {
+                managedPropietario.setVivienda(casa);
+                // managedPropietario ya es managed si vino de find o de merge retornó managed; solo hacer merge por seguridad
+                em.merge(managedPropietario);
+            }
+
             em.getTransaction().commit();
         } catch (Exception e) {
             if (em.getTransaction().isActive()) em.getTransaction().rollback();
@@ -53,7 +91,40 @@ public class CasaUnifamiliarDAOImpl implements CasaUnifamiliarDAO {
         EntityManager em = getEntityManager();
         try {
             em.getTransaction().begin();
-            em.merge(casa);
+
+            // Gestionar colonia igual que en create
+            Colonia colonia = casa.getColonia();
+            if (colonia != null) {
+                if (colonia.getId() != 0) {
+                    colonia = em.find(Colonia.class, colonia.getId());
+                }
+                if (colonia == null) {
+                    colonia = em.merge(casa.getColonia());
+                }
+                casa.setColonia(colonia);
+            }
+
+            // Gestionar propietario
+            Persona propietario = casa.getPropietario();
+            Persona managedPropietario = null;
+            if (propietario != null) {
+                if (propietario.getId() != 0) {
+                    managedPropietario = em.find(Persona.class, propietario.getId());
+                }
+                if (managedPropietario == null) {
+                    managedPropietario = em.merge(propietario);
+                }
+                casa.setPropietario(managedPropietario);
+            }
+
+            CasaUnifamiliar merged = em.merge(casa);
+            em.flush();
+
+            if (managedPropietario != null) {
+                managedPropietario.setVivienda(merged);
+                em.merge(managedPropietario);
+            }
+
             em.getTransaction().commit();
         } catch (Exception e) {
             if (em.getTransaction().isActive()) em.getTransaction().rollback();

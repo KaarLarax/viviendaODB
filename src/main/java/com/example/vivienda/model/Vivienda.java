@@ -16,8 +16,8 @@ public abstract class Vivienda {
     @Column(unique = true) // Clave catastral debe ser única
     private String claveCatastral;
 
-    // Relación: Una vivienda tiene un y sólo un propietario [cite: 9]
-    @OneToOne
+    // Relación: Muchas viviendas pueden tener el mismo propietario (Persona)
+    @ManyToOne
     private Persona propietario;
 
     // Relación: Una vivienda tiene muchos habitantes [cite: 5]

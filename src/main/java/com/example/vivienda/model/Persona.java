@@ -11,7 +11,10 @@ public class Persona {
     private String rfc;
     private boolean esJefeDeFamilia;
     private int edad;
-    private String apellidos;
+
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    private Familia familia;
     // Relación: Muchas personas habitan en una vivienda [cite: 8]
     @ManyToOne
     private Vivienda vivienda;
@@ -19,20 +22,20 @@ public class Persona {
     // Constructor vacío requerido por JPA
     public Persona() {}
 
-    public Persona(String nombre, String rfc, boolean esJefeDeFamilia,int edad, String apellidos) {
+    public Persona(String nombre, String rfc, boolean esJefeDeFamilia,int edad, Familia familia) {
         this.nombre = nombre;
         this.rfc = rfc;
         this.esJefeDeFamilia = esJefeDeFamilia;
         this.edad = edad;
-        this.apellidos = apellidos;
+        this.familia = familia;
     }
 
-    public String getApellidos() {
-        return apellidos;
+    public Familia getFamilia() {
+        return familia;
     }
 
-    public void setApellidos(String apellidos) {
-        this.apellidos = apellidos;
+    public void setFamilia(Familia familia) {
+        this.familia = familia;
     }
 
     public int getEdad() {
@@ -56,5 +59,11 @@ public class Persona {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    @Override
+    public String toString() {
+        String apellidos = (familia != null && familia.getApellidos() != null) ? familia.getApellidos() : "";
+        return nombre + " " + apellidos;
     }
 }
