@@ -35,18 +35,17 @@ public class CasaUnifamiliarViewController {
     }
 
     private void loadCasas() {
-        casaList.setAll(casaDAO.findAll());
+        casaList.setAll(casaDAO.readAll());
     }
 
     @FXML
     private void onCreate() {
-        CasaUnifamiliar casa = new CasaUnifamiliar(
-            direccionField.getText(),
-            Double.parseDouble(superficieField.getText()),
-            claveCatastralField.getText(),
-            Integer.parseInt(numeroPisosField.getText())
-        );
-        casaDAO.save(casa);
+        CasaUnifamiliar casa = new CasaUnifamiliar();
+        casa.setDireccion(direccionField.getText());
+        casa.setSuperficie(Double.parseDouble(superficieField.getText()));
+        casa.setClaveCatastral(claveCatastralField.getText());
+        casa.setNumeroPisos(Integer.parseInt(numeroPisosField.getText()));
+        casaDAO.create(casa);
         loadCasas();
         clearFields();
     }
@@ -69,7 +68,7 @@ public class CasaUnifamiliarViewController {
     private void onDelete() {
         CasaUnifamiliar selected = casaTable.getSelectionModel().getSelectedItem();
         if (selected != null) {
-            casaDAO.delete(selected.getClaveCatastral());
+            casaDAO.delete(selected);
             loadCasas();
             clearFields();
         }
@@ -93,4 +92,3 @@ public class CasaUnifamiliarViewController {
         numeroPisosField.clear();
     }
 }
-

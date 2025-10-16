@@ -1,30 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<GridPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.example.vivienda.view.CasaUnifamiliarController" hgap="10" vgap="10" alignment="CENTER">
-    <Label text="Dirección:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-    <TextField fx:id="direccionField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-    <Label text="Superficie:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-    <TextField fx:id="superficieField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
-    <Label text="Clave Catastral:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-    <TextField fx:id="claveCatastralField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
-    <Label text="Número de Pisos:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-    <TextField fx:id="numeroPisosField" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
-    <HBox spacing="10" GridPane.rowIndex="4" GridPane.columnIndex="0" GridPane.columnSpan="2">
-        <Button text="Crear" onAction="#onCreate"/>
-        <Button text="Actualizar" onAction="#onUpdate"/>
-        <Button text="Eliminar" onAction="#onDelete"/>
-    </HBox>
-    <TableView fx:id="casaTable" GridPane.rowIndex="5" GridPane.columnIndex="0" GridPane.columnSpan="2" prefHeight="200">
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.GridPane?>
+
+<GridPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+    <TableView fx:id="casaUnifamiliarTable">
         <columns>
-            <TableColumn fx:id="direccionColumn" text="Dirección"/>
             <TableColumn fx:id="superficieColumn" text="Superficie"/>
             <TableColumn fx:id="claveCatastralColumn" text="Clave Catastral"/>
             <TableColumn fx:id="numeroPisosColumn" text="Nº Pisos"/>
         </columns>
-        <onMouseClicked>
-            <FXHandler fx:constant="onSelect"/>
-        </onMouseClicked>
     </TableView>
 </GridPane>
-
