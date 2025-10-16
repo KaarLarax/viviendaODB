@@ -229,6 +229,11 @@ public class CasaUnifamiliarViewController {
         limpiarCampos();
         loadCasas();
         casaUnifamiliarTable.getSelectionModel().clearSelection();
+
+        // 🔹 Refrescar la tabla de colonias para actualizar el número de viviendas
+        if (ColoniaViewController.getInstance() != null) {
+            ColoniaViewController.getInstance().refreshTable();
+        }
     }
 
     private void limpiarCampos() {

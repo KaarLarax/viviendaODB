@@ -2,6 +2,16 @@
 <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence">
     <persistence-unit name="vivienda-db">
         <provider>com.objectdb.jpa.Provider</provider>
+
+        <!-- Registrar todas las entidades -->
+        <class>com.example.vivienda.model.Vivienda</class>
+        <class>com.example.vivienda.model.CasaUnifamiliar</class>
+        <class>com.example.vivienda.model.Departamento</class>
+        <class>com.example.vivienda.model.Edificio</class>
+        <class>com.example.vivienda.model.Colonia</class>
+        <class>com.example.vivienda.model.Persona</class>
+        <class>com.example.vivienda.model.Familia</class>
+
         <properties>
             <!-- URL correcta para ObjectDB: use el prefijo objectdb: -->
             <property name="javax.persistence.jdbc.url" value="objectdb:db/vivienda.odb"/>

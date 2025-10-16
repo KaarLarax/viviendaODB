@@ -13,6 +13,8 @@ import javafx.scene.control.cell.PropertyValueFactory;
 
 public class ColoniaViewController {
 
+    private static ColoniaViewController instance;
+
     @FXML
     private TextField nombreField;
     @FXML
@@ -25,6 +27,8 @@ public class ColoniaViewController {
     private TableColumn<Colonia, String> nombreColumn;
     @FXML
     private TableColumn<Colonia, String> codigoPostalColumn;
+    @FXML
+    private TableColumn<Colonia, Integer> numViviendasColumn;
 
     // 🔹 Botones con fx:id
     @FXML
@@ -38,11 +42,18 @@ public class ColoniaViewController {
 
     private final ColoniaController coloniaController = new ColoniaController();
 
+    public static ColoniaViewController getInstance() {
+        return instance;
+    }
+
     @FXML
     public void initialize() {
+        instance = this;
+
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         nombreColumn.setCellValueFactory(new PropertyValueFactory<>("nombre"));
         codigoPostalColumn.setCellValueFactory(new PropertyValueFactory<>("codigoPostal"));
+        numViviendasColumn.setCellValueFactory(new PropertyValueFactory<>("numeroViviendas"));
         loadColonias();
 
         // 🔹 Estado inicial de botones
@@ -67,6 +78,12 @@ public class ColoniaViewController {
 
     private void loadColonias() {
         coloniaTable.getItems().setAll(coloniaController.obtenerTodasLasColonias());
+        coloniaTable.refresh();
+    }
+
+    // Método público para refrescar la tabla desde otros controladores
+    public void refreshTable() {
+        loadColonias();
     }
 
     @FXML

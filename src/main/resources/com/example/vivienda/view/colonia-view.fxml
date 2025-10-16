@@ -23,9 +23,10 @@
     </HBox>
     <TableView fx:id="coloniaTable" prefHeight="200.0" GridPane.columnSpan="2" GridPane.columnIndex="0" GridPane.rowIndex="3">
         <columns>
-            <TableColumn fx:id="idColumn" prefWidth="75.0" text="ID" />
+            <TableColumn fx:id="idColumn" prefWidth="60.0" text="ID" />
             <TableColumn fx:id="nombreColumn" prefWidth="150.0" text="Nombre" />
-            <TableColumn fx:id="codigoPostalColumn" prefWidth="150.0" text="Código Postal" />
+            <TableColumn fx:id="codigoPostalColumn" prefWidth="120.0" text="Código Postal" />
+            <TableColumn fx:id="numViviendasColumn" prefWidth="130.0" text="Nº Viviendas" />
         </columns>
     </TableView>
     <columnConstraints>

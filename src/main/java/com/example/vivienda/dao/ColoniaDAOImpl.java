@@ -42,7 +42,15 @@ public class ColoniaDAOImpl implements ColoniaDAO {
     public List<Colonia> readAll() {
         EntityManager em = getEntityManager();
         try {
-            return em.createQuery("SELECT c FROM Colonia c", Colonia.class).getResultList();
+            // Con EAGER fetch, las viviendas se cargan automáticamente
+            List<Colonia> colonias = em.createQuery("SELECT c FROM Colonia c", Colonia.class).getResultList();
+            // Forzar la inicialización de la colección de viviendas
+            for (Colonia colonia : colonias) {
+                if (colonia.getViviendas() != null) {
+                    colonia.getViviendas().size(); // Esto fuerza la carga
+                }
+            }
+            return colonias;
         } finally {
             em.close();
         }

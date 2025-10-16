@@ -8,6 +8,7 @@ import java.util.List;
 
 @Entity
 public class Edificio extends Vivienda {
+    private String nombre;
     private int totalDepartamentos;
 
     @OneToMany(mappedBy = "edificio", cascade = CascadeType.ALL)
@@ -18,10 +19,19 @@ public class Edificio extends Vivienda {
         this.departamentos = new ArrayList<>();
     }
 
-    public Edificio(String direccion, double superficie, String claveCatastral, Persona propietario, Colonia colonia, int totalDepartamentos) {
+    public Edificio(String nombre, String direccion, double superficie, String claveCatastral, Persona propietario, Colonia colonia, int totalDepartamentos) {
         super(direccion, superficie, claveCatastral, propietario, colonia);
+        this.nombre = nombre;
         this.totalDepartamentos = totalDepartamentos;
         this.departamentos = new ArrayList<>();
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
     }
 
     public int getTotalDepartamentos() {
@@ -39,6 +49,7 @@ public class Edificio extends Vivienda {
     public void setDepartamentos(List<Departamento> departamentos) {
         this.departamentos = departamentos;
     }
+
     public void agregarDepartamento(Departamento departamento) {
         this.departamentos.add(departamento);
         departamento.setEdificio(this);
@@ -46,6 +57,6 @@ public class Edificio extends Vivienda {
 
     @Override
     public String toString() {
-        return getDireccion();
+        return nombre != null ? nombre : getDireccion();
     }
 }
