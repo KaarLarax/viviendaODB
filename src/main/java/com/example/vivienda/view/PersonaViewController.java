@@ -1,5 +1,6 @@
 package com.example.vivienda.view;
 
+import com.example.vivienda.controller.FamiliaController;
 import com.example.vivienda.controller.PersonaController;
 import com.example.vivienda.model.Familia;
 import com.example.vivienda.model.Persona;
@@ -8,6 +9,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.util.StringConverter;
 import java.util.List;
 
 public class PersonaViewController {
@@ -15,7 +17,7 @@ public class PersonaViewController {
     @FXML
     private TextField nombreField;
     @FXML
-    private TextField apellidosField;
+    private ComboBox<Familia> familiaComboBox;
     @FXML
     private TextField rfcField;
     @FXML
@@ -50,6 +52,7 @@ public class PersonaViewController {
     private Button limpiarButton;
 
     private final PersonaController personaController = new PersonaController();
+    private final FamiliaController familiaController = new FamiliaController();
 
     @FXML
     public void initialize() {
@@ -66,6 +69,9 @@ public class PersonaViewController {
                 new SimpleIntegerProperty(personaController.obtenerNumeroDePropiedades(cellData.getValue())).asObject()
         );
 
+        // Configurar ComboBox de familias
+        configurarFamiliaComboBox();
+        loadFamilias();
         loadPersonas();
 
         // 🔹 Estado inicial de botones
@@ -88,6 +94,28 @@ public class PersonaViewController {
         });
     }
 
+    private void configurarFamiliaComboBox() {
+        familiaComboBox.setConverter(new StringConverter<Familia>() {
+            @Override
+            public String toString(Familia familia) {
+                if (familia == null) {
+                    return null;
+                }
+                return familia.getApellidos() + " (ID: " + familia.getId() + ")";
+            }
+
+            @Override
+            public Familia fromString(String string) {
+                return null;
+            }
+        });
+    }
+
+    private void loadFamilias() {
+        List<Familia> familias = familiaController.obtenerTodasLasFamilias();
+        familiaComboBox.getItems().setAll(familias);
+    }
+
     private void loadPersonas() {
         List<Persona> personas = personaController.obtenerTodasLasPersonas();
         personaTable.getItems().setAll(personas);
@@ -97,13 +125,28 @@ public class PersonaViewController {
     private void handleCreate() {
         if (!validateInput()) return;
 
-        Familia familia = new Familia(apellidosField.getText());
+        Familia familiaSeleccionada = familiaComboBox.getValue();
+
+        // Validar que solo haya un jefe de familia por apellidos
+        if (esJefeDeFamiliaCheckBox.isSelected()) {
+            Persona jefeFamiliaExistente = personaController.obtenerJefeDeFamiliaPorApellidos(familiaSeleccionada.getApellidos());
+            if (jefeFamiliaExistente != null) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText("Ya existe un jefe de familia");
+                alert.setContentText("La familia con apellidos '" + familiaSeleccionada.getApellidos() +
+                                   "' ya tiene un jefe de familia: " + jefeFamiliaExistente.getNombre());
+                alert.showAndWait();
+                return;
+            }
+        }
+
         Persona persona = new Persona(
                 nombreField.getText(),
                 rfcField.getText(),
                 esJefeDeFamiliaCheckBox.isSelected(),
                 Integer.parseInt(edadField.getText()),
-                familia
+                familiaSeleccionada
         );
 
         personaController.crearPersona(persona);
@@ -123,16 +166,28 @@ public class PersonaViewController {
 
         Persona selectedPersona = personaTable.getSelectionModel().getSelectedItem();
         if (selectedPersona != null) {
+            Familia familiaSeleccionada = familiaComboBox.getValue();
+
+            // Validar que solo haya un jefe de familia por apellidos
+            if (esJefeDeFamiliaCheckBox.isSelected()) {
+                Persona jefeFamiliaExistente = personaController.obtenerJefeDeFamiliaPorApellidos(familiaSeleccionada.getApellidos());
+                // Si existe otro jefe de familia y NO es la persona actual que estamos editando
+                if (jefeFamiliaExistente != null && jefeFamiliaExistente.getId() != selectedPersona.getId()) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Error");
+                    alert.setHeaderText("Ya existe un jefe de familia");
+                    alert.setContentText("La familia con apellidos '" + familiaSeleccionada.getApellidos() +
+                                       "' ya tiene un jefe de familia: " + jefeFamiliaExistente.getNombre());
+                    alert.showAndWait();
+                    return;
+                }
+            }
+
             selectedPersona.setNombre(nombreField.getText());
             selectedPersona.setRfc(rfcField.getText());
             selectedPersona.setEdad(Integer.parseInt(edadField.getText()));
             selectedPersona.setEsJefeDeFamilia(esJefeDeFamiliaCheckBox.isSelected());
-
-            if (selectedPersona.getFamilia() == null) {
-                selectedPersona.setFamilia(new Familia(apellidosField.getText()));
-            } else {
-                selectedPersona.getFamilia().setApellidos(apellidosField.getText());
-            }
+            selectedPersona.setFamilia(familiaSeleccionada);
 
             personaController.actualizarPersona(selectedPersona);
             loadPersonas();
@@ -161,9 +216,9 @@ public class PersonaViewController {
             personaTable.getSelectionModel().clearSelection();
         }
     }
+
     @FXML
     private void handleLimpiar() {
-
         clearFields();
         personaTable.getSelectionModel().clearSelection();
 
@@ -180,9 +235,9 @@ public class PersonaViewController {
         esJefeDeFamiliaCheckBox.setSelected(selectedPersona.isEsJefeDeFamilia());
 
         if (selectedPersona.getFamilia() != null) {
-            apellidosField.setText(selectedPersona.getFamilia().getApellidos());
+            familiaComboBox.setValue(selectedPersona.getFamilia());
         } else {
-            apellidosField.clear();
+            familiaComboBox.setValue(null);
         }
     }
 
@@ -192,8 +247,8 @@ public class PersonaViewController {
         if (nombreField.getText() == null || nombreField.getText().trim().isEmpty()) {
             errorMessage += "Nombre no válido.\n";
         }
-        if (apellidosField.getText() == null || apellidosField.getText().trim().isEmpty()) {
-            errorMessage += "Apellidos no válidos.\n";
+        if (familiaComboBox.getValue() == null) {
+            errorMessage += "Debe seleccionar una familia.\n";
         }
         if (rfcField.getText() == null || rfcField.getText().trim().isEmpty()) {
             errorMessage += "RFC no válido.\n";
@@ -222,7 +277,7 @@ public class PersonaViewController {
 
     private void clearFields() {
         nombreField.clear();
-        apellidosField.clear();
+        familiaComboBox.setValue(null);
         rfcField.clear();
         edadField.clear();
         esJefeDeFamiliaCheckBox.setSelected(false);

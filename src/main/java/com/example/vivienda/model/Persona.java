@@ -13,7 +13,7 @@ public class Persona {
     private int edad;
 
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     private Familia familia;
     // Relación: Muchas personas habitan en una vivienda [cite: 8]
     @ManyToOne

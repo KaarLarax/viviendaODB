@@ -4,6 +4,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import javafx.scene.control.Alert;
 import javafx.scene.layout.StackPane;
 
 import java.io.IOException;
@@ -47,14 +48,30 @@ public class MainViewController {
         loadView("view/persona-view.fxml");
     }
 
+    @FXML
+    private void handleFamilia(ActionEvent event) {
+        loadView("view/familia-view.fxml");
+    }
+
     private void loadView(String fxmlFile) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/vivienda/" + fxmlFile));
             Parent view = loader.load();
             contentPane.getChildren().setAll(view);
         } catch (IOException e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error al cargar vista");
+            alert.setHeaderText("No se pudo cargar la vista");
+            alert.setContentText("Error al cargar: " + fxmlFile + "\n" + e.getMessage());
+            alert.showAndWait();
+            e.printStackTrace();
+        } catch (Exception e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("Error inesperado");
+            alert.setContentText(e.getMessage());
+            alert.showAndWait();
             e.printStackTrace();
         }
     }
 }
-
