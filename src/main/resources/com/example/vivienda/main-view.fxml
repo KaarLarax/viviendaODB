@@ -5,19 +5,13 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.vivienda.view.MainViewController">
     <top>
-        <MenuBar prefHeight="167.0" prefWidth="1663.0">
-            <menus>
-                <Menu text="Gestionar">
-                    <items>
-                        <MenuItem onAction="#handleCasaUnifamiliar" text="Casa Unifamiliar" />
-                        <MenuItem onAction="#handleColonia" text="Colonia" />
-                        <MenuItem onAction="#handleDepartamento" text="Departamento" />
-                        <MenuItem onAction="#handleEdificio" text="Edificio" />
-                        <MenuItem onAction="#handlePersona" text="Persona" />
-                    </items>
-                </Menu>
-            </menus>
-        </MenuBar>
+        <HBox alignment="TOP_RIGHT" prefHeight="85.0" prefWidth="425.0" spacing="10" style="-fx-padding: 10;">
+            <Button onAction="#handlePersona" text="Persona" styleClass="main-button" />
+            <Button onAction="#handleEdificio" text="Edificio" styleClass="main-button" />
+            <Button onAction="#handleDepartamento" text="Departamento" styleClass="main-button" />
+            <Button onAction="#handleColonia" text="Colonia" styleClass="main-button" />
+            <Button onAction="#handleCasaUnifamiliar" text="Casa Unifamiliar" styleClass="main-button" />
+        </HBox>
     </top>
     <center>
         <StackPane fx:id="contentPane" />
