@@ -98,5 +98,29 @@ public class PersonaDAOImpl implements PersonaDAO {
             em.close();
         }
     }
-}
 
+    @Override
+    public int getNumeroDePropiedades(Persona persona) {
+        EntityManager em = getEntityManager();
+        try {
+            Long count = em.createQuery("SELECT COUNT(v) FROM Vivienda v WHERE v.propietario = :persona", Long.class)
+                    .setParameter("persona", persona)
+                    .getSingleResult();
+            return count.intValue();
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public Persona findJefeDeFamiliaByApellidos(String apellidos) {
+        EntityManager em = getEntityManager();
+        try {
+            return em.createQuery("SELECT p FROM Persona p WHERE p.apellidos = :apellidos AND p.esJefeDeFamilia = true", Persona.class)
+                    .setParameter("apellidos", apellidos)
+                    .getResultStream().findFirst().orElse(null);
+        } finally {
+            em.close();
+        }
+    }
+}
