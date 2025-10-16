@@ -14,7 +14,7 @@ public class Colonia {
     private String nombre;
     private String codigoPostal;
 
-    @OneToMany(mappedBy = "colonia", cascade = CascadeType.PERSIST)
+    @OneToMany(mappedBy = "colonia", cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     private List<Vivienda> viviendas;
 
     public Colonia() {
@@ -58,6 +58,15 @@ public class Colonia {
 
     public void setViviendas(List<Vivienda> viviendas) {
         this.viviendas = viviendas;
+    }
+
+    // Método para obtener el número de viviendas
+    public int getNumeroViviendas() {
+        if (viviendas == null) {
+            return 0;
+        }
+        // Contar todas las viviendas (Edificios, CasasUnifamiliares y Departamentos)
+        return viviendas.size();
     }
 
     @Override

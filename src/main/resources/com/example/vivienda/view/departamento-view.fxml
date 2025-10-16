@@ -13,23 +13,17 @@
     <Label text="Superficie:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
     <TextField fx:id="superficieField" promptText="Ingrese superficie" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
-    <Label text="Clave Catastral:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-    <TextField fx:id="claveCatastralField" promptText="Ingrese clave catastral" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+    <Label text="Número interior:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+    <TextField fx:id="numeroField" promptText="Ingrese número (ej: 101, 2A)" GridPane.columnIndex="1" GridPane.rowIndex="3" />
 
-    <Label text="Número:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
-    <TextField fx:id="numeroField" promptText="Ingrese número (ej: 101, 2A)" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+    <Label text="Edificio:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+    <ComboBox fx:id="comboEdificio" promptText="Seleccione edificio" GridPane.columnIndex="1" GridPane.rowIndex="4" prefWidth="200" />
 
-    <Label text="Edificio:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
-    <ComboBox fx:id="comboEdificio" promptText="Seleccione edificio" GridPane.columnIndex="1" GridPane.rowIndex="5" prefWidth="200" />
-
-    <Label text="Colonia:" GridPane.columnIndex="0" GridPane.rowIndex="6" />
-    <ComboBox fx:id="comboColonia" promptText="Seleccione colonia" GridPane.columnIndex="1" GridPane.rowIndex="6" prefWidth="200" />
-
-    <Label text="Propietario:" GridPane.columnIndex="0" GridPane.rowIndex="7" />
-    <ComboBox fx:id="comboPropietario" promptText="Seleccione propietario" GridPane.columnIndex="1" GridPane.rowIndex="7" prefWidth="200" />
+    <Label text="Propietario:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+    <ComboBox fx:id="comboPropietario" promptText="Seleccione propietario" GridPane.columnIndex="1" GridPane.rowIndex="5" prefWidth="200" />
 
     <!-- Botones -->
-    <HBox spacing="10" alignment="CENTER" GridPane.columnIndex="0" GridPane.rowIndex="8" GridPane.columnSpan="2">
+    <HBox spacing="10" alignment="CENTER" GridPane.columnIndex="0" GridPane.rowIndex="6" GridPane.columnSpan="2">
         <Button fx:id="btnCrear" text="Crear" onAction="#agregarDepartamento" />
         <Button fx:id="btnActualizar" text="Actualizar" onAction="#actualizarDepartamento" />
         <Button fx:id="btnEliminar" text="Eliminar" onAction="#eliminarDepartamento" />
@@ -37,14 +31,14 @@
     </HBox>
 
     <!-- Tabla -->
-    <TableView fx:id="departamentoTable" GridPane.columnIndex="0" GridPane.rowIndex="9" GridPane.columnSpan="2" prefHeight="250" prefWidth="900">
+    <TableView fx:id="departamentoTable" GridPane.columnIndex="0" GridPane.rowIndex="7" GridPane.columnSpan="2" prefHeight="250" prefWidth="900">
         <columns>
             <TableColumn fx:id="idColumn" text="ID" prefWidth="50" />
             <TableColumn fx:id="direccionColumn" text="Dirección" prefWidth="150" />
             <TableColumn fx:id="superficieColumn" text="Superficie" prefWidth="100" />
-            <TableColumn fx:id="claveCatastralColumn" text="Clave Catastral" prefWidth="130" />
             <TableColumn fx:id="numeroColumn" text="Número" prefWidth="80" />
             <TableColumn fx:id="edificioColumn" text="Edificio" prefWidth="130" />
+            <TableColumn fx:id="claveCatastralColumn" text="Clave Catastral (Edificio)" prefWidth="180" />
             <TableColumn fx:id="coloniaColumn" text="Colonia" prefWidth="120" />
             <TableColumn fx:id="propietarioColumn" text="Propietario" prefWidth="140" />
         </columns>
@@ -55,8 +49,6 @@
         <ColumnConstraints />
     </columnConstraints>
     <rowConstraints>
-        <RowConstraints />
-        <RowConstraints />
         <RowConstraints />
         <RowConstraints />
         <RowConstraints />

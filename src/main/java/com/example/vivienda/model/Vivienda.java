@@ -84,6 +84,16 @@ public abstract class Vivienda {
     }
 
     public void setColonia(Colonia colonia) {
+        // Remover de la colonia anterior si existe
+        if (this.colonia != null && this.colonia.getViviendas() != null) {
+            this.colonia.getViviendas().remove(this);
+        }
+
         this.colonia = colonia;
+
+        // Agregar a la nueva colonia
+        if (colonia != null && colonia.getViviendas() != null && !colonia.getViviendas().contains(this)) {
+            colonia.getViviendas().add(this);
+        }
     }
 }
