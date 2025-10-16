@@ -13,8 +13,8 @@ public abstract class Vivienda {
 
     private String direccion;
     private double superficie;
-    @Column(unique = true) // Clave catastral debe ser única
-    private String claveCatastral;
+    // @Column(unique = true) // Clave catastral debe ser única
+    private String numeroExterior;
 
     // Relación: Muchas viviendas pueden tener el mismo propietario (Persona)
     @ManyToOne
@@ -33,11 +33,11 @@ public abstract class Vivienda {
         this.habitantes = new ArrayList<>();
     }
 
-    public Vivienda(String direccion, double superficie, String claveCatastral, Persona propietario, Colonia colonia) {
+    public Vivienda(String direccion, double superficie, String numeroExterior, Persona propietario, Colonia colonia) {
         this();
         this.direccion = direccion;
         this.superficie = superficie;
-        this.claveCatastral = claveCatastral;
+        this.numeroExterior = numeroExterior;
         this.propietario = propietario;
         this.colonia = colonia;
     }
@@ -67,12 +67,12 @@ public abstract class Vivienda {
         this.superficie = superficie;
     }
 
-    public String getClaveCatastral() {
-        return claveCatastral;
+    public String getNumeroExterior() {
+        return numeroExterior;
     }
 
-    public void setClaveCatastral(String claveCatastral) {
-        this.claveCatastral = claveCatastral;
+    public void setNumeroExterior(String claveCatastral) {
+        this.numeroExterior = claveCatastral;
     }
 
     public void setHabitantes(List<Persona> habitantes) {
