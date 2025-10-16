@@ -10,9 +10,8 @@ import java.util.List;
 public class Edificio extends Vivienda {
     private int totalDepartamentos;
 
-    // Un edificio puede estar compuesto de otras viviendas (unidades unifamiliares)
-    @OneToMany(cascade = CascadeType.ALL)
-    private List<Vivienda> departamentos;
+    @OneToMany(mappedBy = "edificio", cascade = CascadeType.ALL)
+    private List<Departamento> departamentos;
 
     public Edificio() {
         super();
@@ -33,14 +32,15 @@ public class Edificio extends Vivienda {
         this.totalDepartamentos = totalDepartamentos;
     }
 
-    public List<Vivienda> getDepartamentos() {
+    public List<Departamento> getDepartamentos() {
         return departamentos;
     }
 
-    public void setDepartamentos(List<Vivienda> departamentos) {
+    public void setDepartamentos(List<Departamento> departamentos) {
         this.departamentos = departamentos;
     }
-    public void agregarDepartamento(Vivienda departamento) {
+    public void agregarDepartamento(Departamento departamento) {
         this.departamentos.add(departamento);
+        departamento.setEdificio(this);
     }
 }
