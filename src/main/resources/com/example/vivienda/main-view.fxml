@@ -6,6 +6,7 @@
 <BorderPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.vivienda.view.MainViewController">
     <top>
         <HBox alignment="TOP_RIGHT" prefHeight="85.0" prefWidth="425.0" spacing="10" style="-fx-padding: 10;">
+            <Button onAction="#handleInicio" text="Inicio" styleClass="main-button" />
             <Button onAction="#handlePersona" text="Persona" styleClass="main-button" />
             <Button onAction="#handleFamilia" text="Familia" styleClass="main-button" />
             <Button onAction="#handleEdificio" text="Edificio" styleClass="main-button" />

@@ -3,7 +3,7 @@
 <?import javafx.scene.layout.*?>
 
 <GridPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.vivienda.view.CasaUnifamiliarViewController" hgap="15" vgap="15" alignment="CENTER" styleClass="main-pane" style="-fx-padding: 20;">
-    <Label text="Gestión de Casa Unifamiliar" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.columnSpan="2" styleClass="main-title" />
+    <Label text="Gestión de Casa Unifamiliar" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.columnSpan="2" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
     <!-- Campo Dirección -->
     <Label text="Dirección:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
     <TextField fx:id="txtDireccion" promptText="Ingrese dirección" GridPane.columnIndex="1" GridPane.rowIndex="1" />

@@ -24,6 +24,11 @@ public class MainViewController {
     }
 
     @FXML
+    private void handleInicio(ActionEvent event) {
+        loadWelcomeView();
+    }
+
+    @FXML
     private void handleCasaUnifamiliar(ActionEvent event) {
         loadView("view/casaunifamiliar-view.fxml");
     }
