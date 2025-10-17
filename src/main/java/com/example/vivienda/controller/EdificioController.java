@@ -14,7 +14,7 @@ public class EdificioController {
 
     // Crear edificio solo si la claveCatastral no existe
     public boolean crearEdificio(Edificio edificio) {
-        if (claveCatastralExiste(edificio.getClaveCatastral())) {
+        if (claveCatastralExiste(edificio.getNumeroExterior())) {
             return false;
         }
         edificioDAO.create(edificio);
@@ -44,6 +44,6 @@ public class EdificioController {
     // Método auxiliar para verificar duplicados
     private boolean claveCatastralExiste(String claveCatastral) {
         return edificioDAO.readAll().stream()
-                .anyMatch(e -> e.getClaveCatastral().equals(claveCatastral));
+                .anyMatch(e -> e.getNumeroExterior().equals(claveCatastral));
     }
 }

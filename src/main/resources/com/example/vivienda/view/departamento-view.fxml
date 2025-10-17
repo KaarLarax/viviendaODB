@@ -28,19 +28,28 @@
         <Button fx:id="btnActualizar" text="Actualizar" onAction="#actualizarDepartamento" />
         <Button fx:id="btnEliminar" text="Eliminar" onAction="#eliminarDepartamento" />
         <Button fx:id="btnLimpiar" text="Limpiar" onAction="#limpiarCampos" />
+        <Button fx:id="btnListar" text="Listar" onAction="#listarDepartamentos" />
+    </HBox>
+
+    <!-- Sección de filtrado -->
+    <Label text="Filtrar por:" GridPane.columnIndex="0" GridPane.rowIndex="7" />
+    <HBox spacing="10" GridPane.columnSpan="2" GridPane.columnIndex="0" GridPane.rowIndex="8">
+        <ComboBox fx:id="filtroComboBox" prefWidth="150.0" promptText="Seleccione atributo" />
+        <TextField fx:id="filtroTextField" prefWidth="200.0" promptText="Ingrese valor a buscar" />
     </HBox>
 
     <!-- Tabla -->
-    <TableView fx:id="departamentoTable" GridPane.columnIndex="0" GridPane.rowIndex="7" GridPane.columnSpan="2" prefHeight="250" prefWidth="900">
+    <TableView fx:id="departamentoTable" GridPane.columnIndex="0" GridPane.rowIndex="9" GridPane.columnSpan="2" prefHeight="250" prefWidth="900">
         <columns>
             <TableColumn fx:id="idColumn" text="ID" prefWidth="50" />
             <TableColumn fx:id="direccionColumn" text="Dirección" prefWidth="150" />
             <TableColumn fx:id="superficieColumn" text="Superficie" prefWidth="100" />
             <TableColumn fx:id="numeroColumn" text="Número" prefWidth="80" />
             <TableColumn fx:id="edificioColumn" text="Edificio" prefWidth="130" />
-            <TableColumn fx:id="claveCatastralColumn" text="Clave Catastral (Edificio)" prefWidth="180" />
+            <TableColumn fx:id="numeroExteriorColumn" text="Número Exterior (Edificio)" prefWidth="180" />
             <TableColumn fx:id="coloniaColumn" text="Colonia" prefWidth="120" />
             <TableColumn fx:id="propietarioColumn" text="Propietario" prefWidth="140" />
+            <TableColumn fx:id="numeroHabitantesColumn" text="Nº Habitantes" prefWidth="100" />
         </columns>
     </TableView>
 
@@ -49,6 +58,8 @@
         <ColumnConstraints />
     </columnConstraints>
     <rowConstraints>
+        <RowConstraints />
+        <RowConstraints />
         <RowConstraints />
         <RowConstraints />
         <RowConstraints />

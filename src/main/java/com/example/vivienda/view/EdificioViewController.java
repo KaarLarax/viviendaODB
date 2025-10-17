@@ -3,10 +3,12 @@ package com.example.vivienda.view;
 import com.example.vivienda.controller.EdificioController;
 import com.example.vivienda.controller.ColoniaController;
 import com.example.vivienda.controller.PersonaController;
+import com.example.vivienda.controller.DepartamentoController;
 import com.example.vivienda.model.Edificio;
 import com.example.vivienda.model.Colonia;
 import com.example.vivienda.model.Persona;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -17,8 +19,11 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 
 public class EdificioViewController {
+
+    private static EdificioViewController instance;
 
     @FXML
     private TextField nombreField;
@@ -27,9 +32,7 @@ public class EdificioViewController {
     @FXML
     private TextField superficieField;
     @FXML
-    private TextField claveCatastralField;
-    @FXML
-    private TextField numApartamentosField;
+    private TextField numeroExteriorField;
     @FXML
     private ComboBox<Colonia> comboColonia;
     @FXML
@@ -45,13 +48,15 @@ public class EdificioViewController {
     @FXML
     private TableColumn<Edificio, Double> superficieColumn;
     @FXML
-    private TableColumn<Edificio, String> claveCatastralColumn;
+    private TableColumn<Edificio, String> numeroExteriorColumn;
     @FXML
     private TableColumn<Edificio, String> coloniaColumn;
     @FXML
     private TableColumn<Edificio, String> propietarioColumn;
     @FXML
     private TableColumn<Edificio, Integer> numApartamentosColumn;
+    @FXML
+    private TableColumn<Edificio, Integer> numeroHabitantesColumn;
 
     @FXML
     private Button crearButton;
@@ -61,18 +66,30 @@ public class EdificioViewController {
     private Button eliminarButton;
     @FXML
     private Button limpiarButton;
+    @FXML
+    private Button listarButton;
+
+    // 🔹 Filtrado
+    @FXML
+    private ComboBox<String> filtroComboBox;
+    @FXML
+    private TextField filtroTextField;
 
     private final EdificioController edificioController = new EdificioController();
     private final ColoniaController coloniaController = new ColoniaController();
     private final PersonaController personaController = new PersonaController();
+    private final DepartamentoController departamentoController = new DepartamentoController();
+    private ObservableList<Edificio> todosLosEdificios = FXCollections.observableArrayList();
 
     @FXML
     public void initialize() {
+        instance = this;
+
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         nombreColumn.setCellValueFactory(new PropertyValueFactory<>("nombre"));
         direccionColumn.setCellValueFactory(new PropertyValueFactory<>("direccion"));
         superficieColumn.setCellValueFactory(new PropertyValueFactory<>("superficie"));
-        claveCatastralColumn.setCellValueFactory(new PropertyValueFactory<>("claveCatastral"));
+        numeroExteriorColumn.setCellValueFactory(new PropertyValueFactory<>("numeroExterior"));
 
         // Columna de colonia
         coloniaColumn.setCellValueFactory(data -> {
@@ -86,10 +103,43 @@ public class EdificioViewController {
             return new SimpleStringProperty(propietario != null ? propietario.toString() : "");
         });
 
-        numApartamentosColumn.setCellValueFactory(new PropertyValueFactory<>("totalDepartamentos"));
+        // 🔹 Columna de número de apartamentos - calculado automáticamente
+        numApartamentosColumn.setCellValueFactory(data -> {
+            Edificio edificio = data.getValue();
+            long count = departamentoController.obtenerTodosLosDepartamentos().stream()
+                    .filter(depto -> depto.getEdificio() != null && depto.getEdificio().getId() == edificio.getId())
+                    .count();
+            return new SimpleIntegerProperty((int) count).asObject();
+        });
+
+        // 🔹 Columna de número de habitantes - suma de habitantes de todos los departamentos
+        numeroHabitantesColumn.setCellValueFactory(data -> {
+            Edificio edificio = data.getValue();
+            int totalHabitantes = departamentoController.obtenerTodosLosDepartamentos().stream()
+                    .filter(depto -> depto.getEdificio() != null && depto.getEdificio().getId() == edificio.getId())
+                    .mapToInt(depto -> depto.getHabitantes() != null ? depto.getHabitantes().size() : 0)
+                    .sum();
+            return new SimpleIntegerProperty(totalHabitantes).asObject();
+        });
+
+        // 🔹 Inicializar ComboBox de filtrado
+        filtroComboBox.setItems(FXCollections.observableArrayList(
+            "ID",
+            "Nombre",
+            "Dirección",
+            "Superficie",
+            "Número Exterior",
+            "Colonia",
+            "Propietario",
+            "Nº Apartamentos",
+            "Nº Habitantes"
+        ));
+
+        // 🔹 Listener para filtrar
+        filtroTextField.textProperty().addListener((observable, oldValue, newValue) -> filtrarTabla());
+        filtroComboBox.valueProperty().addListener((observable, oldValue, newValue) -> filtrarTabla());
 
         // Cargar datos
-        loadEdificios();
         comboColonia.setItems(FXCollections.observableArrayList(coloniaController.obtenerTodasLasColonias()));
         comboPropietario.setItems(FXCollections.observableArrayList(personaController.obtenerTodasLasPersonas()));
 
@@ -160,21 +210,99 @@ public class EdificioViewController {
         limpiarButton.setOnAction(e -> limpiarCampos());
     }
 
+    private void filtrarTabla() {
+        String filtroAtributo = filtroComboBox.getValue();
+        String filtroTexto = filtroTextField.getText();
+
+        if (filtroAtributo == null || filtroTexto == null || filtroTexto.trim().isEmpty()) {
+            edificioTable.setItems(todosLosEdificios);
+            return;
+        }
+
+        ObservableList<Edificio> edificiosFiltrados = FXCollections.observableArrayList();
+        String textoMinusculas = filtroTexto.toLowerCase().trim();
+
+        for (Edificio edificio : todosLosEdificios) {
+            boolean coincide = false;
+
+            switch (filtroAtributo) {
+                case "ID":
+                    coincide = String.valueOf(edificio.getId()).contains(textoMinusculas);
+                    break;
+                case "Nombre":
+                    coincide = edificio.getNombre() != null &&
+                              edificio.getNombre().toLowerCase().contains(textoMinusculas);
+                    break;
+                case "Dirección":
+                    coincide = edificio.getDireccion() != null &&
+                              edificio.getDireccion().toLowerCase().contains(textoMinusculas);
+                    break;
+                case "Superficie":
+                    coincide = String.valueOf(edificio.getSuperficie()).contains(textoMinusculas);
+                    break;
+                case "Número Exterior":
+                    coincide = edificio.getNumeroExterior() != null &&
+                              edificio.getNumeroExterior().toLowerCase().contains(textoMinusculas);
+                    break;
+                case "Colonia":
+                    Colonia c = edificio.getColonia();
+                    coincide = c != null && c.getNombre() != null &&
+                              c.getNombre().toLowerCase().contains(textoMinusculas);
+                    break;
+                case "Propietario":
+                    Persona p = edificio.getPropietario();
+                    if (p != null) {
+                        String nombreCompleto = p.getNombre() != null ? p.getNombre() : "";
+                        if (p.getFamilia() != null && p.getFamilia().getApellidos() != null) {
+                            nombreCompleto += " " + p.getFamilia().getApellidos();
+                        }
+                        coincide = nombreCompleto.toLowerCase().contains(textoMinusculas);
+                    }
+                    break;
+                case "Nº Apartamentos":
+                    long count = departamentoController.obtenerTodosLosDepartamentos().stream()
+                            .filter(depto -> depto.getEdificio() != null && depto.getEdificio().getId() == edificio.getId())
+                            .count();
+                    coincide = String.valueOf(count).contains(textoMinusculas);
+                    break;
+                case "Nº Habitantes":
+                    int totalHabitantes = departamentoController.obtenerTodosLosDepartamentos().stream()
+                            .filter(depto -> depto.getEdificio() != null && depto.getEdificio().getId() == edificio.getId())
+                            .mapToInt(depto -> depto.getHabitantes() != null ? depto.getHabitantes().size() : 0)
+                            .sum();
+                    coincide = String.valueOf(totalHabitantes).contains(textoMinusculas);
+                    break;
+            }
+
+            if (coincide) {
+                edificiosFiltrados.add(edificio);
+            }
+        }
+
+        edificioTable.setItems(edificiosFiltrados);
+    }
+
     private void loadEdificios() {
-        edificioTable.getItems().setAll(edificioController.obtenerTodosLosEdificios());
+        todosLosEdificios.setAll(edificioController.obtenerTodosLosEdificios());
+        edificioTable.setItems(todosLosEdificios);
+        edificioTable.refresh();
     }
 
     @FXML
     private void handleCreate() {
         if (!validarCampos()) return;
 
-        // Validar clave catastral duplicada
-        boolean claveDuplicada = edificioController.obtenerTodosLosEdificios().stream()
-                .anyMatch(e -> e.getClaveCatastral().equals(claveCatastralField.getText()));
+        // Validar número exterior duplicado en la misma dirección
+        String direccionIngresada = direccionField.getText().trim();
+        String numeroExteriorIngresado = numeroExteriorField.getText().trim();
 
-        if (claveDuplicada) {
-            mostrarAlerta("Error al crear edificio", "Clave Catastral duplicada",
-                    "Ya existe un edificio con la clave catastral ingresada.");
+        boolean numeroDuplicado = edificioController.obtenerTodosLosEdificios().stream()
+                .anyMatch(e -> e.getDireccion() != null && e.getDireccion().trim().equalsIgnoreCase(direccionIngresada) &&
+                              e.getNumeroExterior() != null && e.getNumeroExterior().equals(numeroExteriorIngresado));
+
+        if (numeroDuplicado) {
+            mostrarAlerta("Error al crear edificio", "Número Exterior duplicado",
+                    "Ya existe una vivienda con el número exterior " + numeroExteriorIngresado + " en la dirección " + direccionIngresada + ".");
             return;
         }
 
@@ -182,10 +310,9 @@ public class EdificioViewController {
         edificio.setNombre(nombreField.getText());
         edificio.setDireccion(direccionField.getText());
         edificio.setSuperficie(Double.parseDouble(superficieField.getText()));
-        edificio.setClaveCatastral(claveCatastralField.getText());
+        edificio.setNumeroExterior(numeroExteriorField.getText());
         edificio.setColonia(comboColonia.getValue());
         edificio.setPropietario(comboPropietario.getValue());
-        edificio.setTotalDepartamentos(Integer.parseInt(numApartamentosField.getText()));
 
         // Mantener consistencia bidireccional
         if (edificio.getPropietario() != null) {
@@ -202,12 +329,19 @@ public class EdificioViewController {
         if (selectedEdificio == null) return;
         if (!validarCampos()) return;
 
-        if (!selectedEdificio.getClaveCatastral().equals(claveCatastralField.getText())) {
-            boolean claveDuplicada = edificioController.obtenerTodosLosEdificios().stream()
-                    .anyMatch(e -> e.getClaveCatastral().equals(claveCatastralField.getText()));
-            if (claveDuplicada) {
-                mostrarAlerta("Error al actualizar edificio", "Clave Catastral duplicada",
-                        "Ya existe un edificio con la clave catastral ingresada.");
+        String direccionIngresada = direccionField.getText().trim();
+        String numeroExteriorIngresado = numeroExteriorField.getText().trim();
+        String direccionOriginal = selectedEdificio.getDireccion() != null ? selectedEdificio.getDireccion().trim() : "";
+        String numeroExteriorOriginal = selectedEdificio.getNumeroExterior() != null ? selectedEdificio.getNumeroExterior() : "";
+
+        if (!direccionOriginal.equalsIgnoreCase(direccionIngresada) || !numeroExteriorOriginal.equals(numeroExteriorIngresado)) {
+            boolean numeroDuplicado = edificioController.obtenerTodosLosEdificios().stream()
+                    .anyMatch(e -> e.getDireccion() != null && e.getDireccion().trim().equalsIgnoreCase(direccionIngresada) &&
+                                   e.getNumeroExterior() != null && e.getNumeroExterior().equals(numeroExteriorIngresado) &&
+                                   e.getId() != selectedEdificio.getId());
+            if (numeroDuplicado) {
+                mostrarAlerta("Error al actualizar edificio", "Número Exterior duplicado",
+                        "Ya existe una vivienda con el número exterior " + numeroExteriorIngresado + " en la dirección " + direccionIngresada + ".");
                 return;
             }
         }
@@ -215,10 +349,9 @@ public class EdificioViewController {
         selectedEdificio.setNombre(nombreField.getText());
         selectedEdificio.setDireccion(direccionField.getText());
         selectedEdificio.setSuperficie(Double.parseDouble(superficieField.getText()));
-        selectedEdificio.setClaveCatastral(claveCatastralField.getText());
+        selectedEdificio.setNumeroExterior(numeroExteriorField.getText());
         selectedEdificio.setColonia(comboColonia.getValue());
         selectedEdificio.setPropietario(comboPropietario.getValue());
-        selectedEdificio.setTotalDepartamentos(Integer.parseInt(numApartamentosField.getText()));
 
         // Mantener consistencia bidireccional
         if (selectedEdificio.getPropietario() != null) {
@@ -238,6 +371,11 @@ public class EdificioViewController {
         postAction();
     }
 
+    @FXML
+    private void handleListar() {
+        loadEdificios();
+    }
+
     private void postAction() {
         limpiarCampos();
         loadEdificios();
@@ -253,10 +391,9 @@ public class EdificioViewController {
         nombreField.setText(selectedEdificio.getNombre());
         direccionField.setText(selectedEdificio.getDireccion());
         superficieField.setText(String.valueOf(selectedEdificio.getSuperficie()));
-        claveCatastralField.setText(selectedEdificio.getClaveCatastral());
+        numeroExteriorField.setText(selectedEdificio.getNumeroExterior());
         comboColonia.setValue(selectedEdificio.getColonia());
         comboPropietario.setValue(selectedEdificio.getPropietario());
-        numApartamentosField.setText(String.valueOf(selectedEdificio.getTotalDepartamentos()));
     }
 
     // Limpiar campos y restablecer botones (misma dinámica que Persona)
@@ -264,39 +401,10 @@ public class EdificioViewController {
         nombreField.clear();
         direccionField.clear();
         superficieField.clear();
-        claveCatastralField.clear();
-        numApartamentosField.clear();
-        comboColonia.getSelectionModel().clearSelection();
+        numeroExteriorField.clear();
         comboColonia.setValue(null);
-        comboPropietario.getSelectionModel().clearSelection();
         comboPropietario.setValue(null);
-        edificioTable.getSelectionModel().clearSelection();
         setButtonsState(true, false, false);
-
-        // Forzar refresco visual de los ComboBox
-        comboColonia.setButtonCell(new ListCell<Colonia>() {
-            @Override
-            protected void updateItem(Colonia item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText("Seleccione colonia");
-                } else {
-                    setText(item.getNombre());
-                }
-            }
-        });
-
-        comboPropietario.setButtonCell(new ListCell<Persona>() {
-            @Override
-            protected void updateItem(Persona item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText("Seleccione propietario");
-                } else {
-                    setText(item.toString());
-                }
-            }
-        });
     }
 
     private void setButtonsState(boolean crear, boolean actualizar, boolean eliminar) {
@@ -307,40 +415,16 @@ public class EdificioViewController {
 
     private boolean validarCampos() {
         if (nombreField.getText().isEmpty() || direccionField.getText().isEmpty() || superficieField.getText().isEmpty() ||
-                claveCatastralField.getText().isEmpty() || numApartamentosField.getText().isEmpty()) {
-            mostrarAlerta("Campos incompletos", "Faltan datos",
-                    "Todos los campos son obligatorios.");
+                numeroExteriorField.getText().isEmpty()) {
+            mostrarAlerta("Campos incompletos", "Error de validación", "Por favor complete todos los campos obligatorios.");
             return false;
         }
-
-        if (comboColonia.getValue() == null) {
-            mostrarAlerta("Campos incompletos", "Faltan datos",
-                    "Debe seleccionar una colonia.");
-            return false;
-        }
-
-        if (comboPropietario.getValue() == null) {
-            mostrarAlerta("Campos incompletos", "Faltan datos",
-                    "Debe seleccionar un propietario.");
-            return false;
-        }
-
         try {
             Double.parseDouble(superficieField.getText());
         } catch (NumberFormatException e) {
-            mostrarAlerta("Dato inválido", "Superficie inválida",
-                    "Ingrese un número válido para superficie.");
+            mostrarAlerta("Error de formato", "Campos numéricos inválidos", "La superficie debe ser un valor numérico.");
             return false;
         }
-
-        try {
-            Integer.parseInt(numApartamentosField.getText());
-        } catch (NumberFormatException e) {
-            mostrarAlerta("Dato inválido", "Número de departamentos inválido",
-                    "Ingrese un número válido para total de departamentos.");
-            return false;
-        }
-
         return true;
     }
 
@@ -350,5 +434,13 @@ public class EdificioViewController {
         alert.setHeaderText(header);
         alert.setContentText(contenido);
         alert.showAndWait();
+    }
+
+    public static EdificioViewController getInstance() {
+        return instance;
+    }
+
+    public void refreshTable() {
+        loadEdificios();
     }
 }

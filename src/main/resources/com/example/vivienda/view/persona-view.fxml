@@ -16,21 +16,31 @@
     <Label text="Nombre:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
     <TextField fx:id="nombreField" GridPane.columnIndex="1" GridPane.rowIndex="0" />
     <Label text="Familia:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-    <ComboBox fx:id="familiaComboBox" prefWidth="250.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+    <ComboBox fx:id="familiaComboBox" promptText="Seleccione familia" prefWidth="250.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
     <Label text="RFC:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
     <TextField fx:id="rfcField" GridPane.columnIndex="1" GridPane.rowIndex="2" />
     <Label text="Edad:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
     <TextField fx:id="edadField" GridPane.columnIndex="1" GridPane.rowIndex="3" />
     <Label text="Jefe de Familia:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
     <CheckBox fx:id="esJefeDeFamiliaCheckBox" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-    <HBox spacing="10" GridPane.columnSpan="2" GridPane.columnIndex="0" GridPane.rowIndex="5">
+    <Label text="Vivienda:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+    <ComboBox fx:id="viviendaComboBox"  promptText="Seleccione vivienda" prefWidth="250.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+    <HBox spacing="10" GridPane.columnSpan="2" GridPane.columnIndex="0" GridPane.rowIndex="6">
         <Button fx:id="crearButton" onAction="#handleCreate" text="Crear" />
         <Button fx:id="actualizarButton" onAction="#handleUpdate" text="Actualizar" />
         <Button fx:id="eliminarButton" onAction="#handleDelete" text="Eliminar" />
         <Button fx:id="limpiarButton" onAction="#handleLimpiar" text="Limpiar" />
+        <Button fx:id="listarButton" onAction="#handleListar" text="Listar" />
     </HBox>
 
-    <TableView fx:id="personaTable" prefHeight="200.0" GridPane.columnSpan="2" GridPane.columnIndex="0" GridPane.rowIndex="6">
+    <!-- Sección de filtrado -->
+    <Label text="Filtrar por:" GridPane.columnIndex="0" GridPane.rowIndex="7" />
+    <HBox spacing="10" GridPane.columnSpan="2" GridPane.columnIndex="0" GridPane.rowIndex="8">
+        <ComboBox fx:id="filtroComboBox" prefWidth="150.0" promptText="Seleccione atributo" />
+        <TextField fx:id="filtroTextField" prefWidth="200.0" promptText="Ingrese valor a buscar" />
+    </HBox>
+
+    <TableView fx:id="personaTable" prefHeight="200.0" GridPane.columnSpan="2" GridPane.columnIndex="0" GridPane.rowIndex="9">
         <columns>
             <TableColumn fx:id="idColumn" prefWidth="75.0" text="ID" />
             <TableColumn fx:id="nombreColumn" prefWidth="150.0" text="Nombre" />
@@ -38,6 +48,7 @@
             <TableColumn fx:id="rfcColumn" prefWidth="150.0" text="RFC" />
             <TableColumn fx:id="edadColumn" prefWidth="75.0" text="Edad" />
             <TableColumn fx:id="esJefeDeFamiliaColumn" prefWidth="120.0" text="Jefe de Familia" />
+            <TableColumn fx:id="viviendaColumn" prefWidth="250.0" text="Vivienda" />
             <TableColumn fx:id="numPropiedadesColumn" prefWidth="100.0" text="N. Prop." />
         </columns>
     </TableView>
@@ -53,6 +64,8 @@
         <RowConstraints />
         <RowConstraints />
         <RowConstraints />
+        <RowConstraints />
+        <RowConstraints />
+        <RowConstraints />
     </rowConstraints>
 </GridPane>
-

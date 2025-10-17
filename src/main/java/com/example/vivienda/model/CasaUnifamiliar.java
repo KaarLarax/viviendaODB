@@ -8,8 +8,8 @@ public class CasaUnifamiliar extends Vivienda {
 
     public CasaUnifamiliar() { super(); }
 
-    public CasaUnifamiliar(String direccion, double superficie, String claveCatastral, Persona propietario, Colonia colonia, int numeroPisos) {
-        super(direccion, superficie, claveCatastral, propietario, colonia);
+    public CasaUnifamiliar(String direccion, double superficie, String numeroExterior, Persona propietario, Colonia colonia, int numeroPisos) {
+        super(direccion, superficie, numeroExterior, propietario, colonia);
         this.numeroPisos = numeroPisos;
     }
     // Getters y Setters...

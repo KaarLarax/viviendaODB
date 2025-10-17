@@ -1,15 +1,23 @@
 package com.example.vivienda.view;
 
+import com.example.vivienda.controller.CasaUnifamiliarController;
+import com.example.vivienda.controller.DepartamentoController;
 import com.example.vivienda.controller.FamiliaController;
 import com.example.vivienda.controller.PersonaController;
+import com.example.vivienda.model.CasaUnifamiliar;
+import com.example.vivienda.model.Departamento;
 import com.example.vivienda.model.Familia;
 import com.example.vivienda.model.Persona;
+import com.example.vivienda.model.Vivienda;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.StringConverter;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PersonaViewController {
@@ -25,6 +33,8 @@ public class PersonaViewController {
     @FXML
     private CheckBox esJefeDeFamiliaCheckBox;
     @FXML
+    private ComboBox<Vivienda> viviendaComboBox;
+    @FXML
     private TableView<Persona> personaTable;
     @FXML
     private TableColumn<Persona, Long> idColumn;
@@ -37,7 +47,9 @@ public class PersonaViewController {
     @FXML
     private TableColumn<Persona, Integer> edadColumn;
     @FXML
-    private TableColumn<Persona, Boolean> esJefeDeFamiliaColumn;
+    private TableColumn<Persona, String> esJefeDeFamiliaColumn;  // 🔹 Cambiar de Boolean a String
+    @FXML
+    private TableColumn<Persona, String> viviendaColumn;
     @FXML
     private TableColumn<Persona, Integer> numPropiedadesColumn;
 
@@ -50,9 +62,20 @@ public class PersonaViewController {
     private Button eliminarButton;
     @FXML
     private Button limpiarButton;
+    @FXML
+    private Button listarButton;
+
+    // 🔹 Filtrado
+    @FXML
+    private ComboBox<String> filtroComboBox;
+    @FXML
+    private TextField filtroTextField;
 
     private final PersonaController personaController = new PersonaController();
     private final FamiliaController familiaController = new FamiliaController();
+    private final CasaUnifamiliarController casaUnifamiliarController = new CasaUnifamiliarController();
+    private final DepartamentoController departamentoController = new DepartamentoController();
+    private ObservableList<Persona> todasLasPersonas = FXCollections.observableArrayList();
 
     @FXML
     public void initialize() {
@@ -64,15 +87,57 @@ public class PersonaViewController {
         });
         rfcColumn.setCellValueFactory(new PropertyValueFactory<>("rfc"));
         edadColumn.setCellValueFactory(new PropertyValueFactory<>("edad"));
-        esJefeDeFamiliaColumn.setCellValueFactory(new PropertyValueFactory<>("esJefeDeFamilia"));
+
+        // 🔹 Mostrar "Sí" o "No" en lugar de true/false
+        esJefeDeFamiliaColumn.setCellValueFactory(cellData -> {
+            boolean esJefe = cellData.getValue().isEsJefeDeFamilia();
+            return new SimpleStringProperty(esJefe ? "Sí" : "No");
+        });
+
+        viviendaColumn.setCellValueFactory(cellData -> {
+            Vivienda v = cellData.getValue().getVivienda();
+            if (v == null) {
+                return new SimpleStringProperty("Sin vivienda");
+            }
+            if (v instanceof CasaUnifamiliar) {
+                CasaUnifamiliar casa = (CasaUnifamiliar) v;
+                return new SimpleStringProperty("Casa: " + casa.getDireccion());
+            } else if (v instanceof Departamento) {
+                Departamento depto = (Departamento) v;
+                String edificioInfo = "";
+                if (depto.getEdificio() != null) {
+                    edificioInfo = " - Edif: " + depto.getEdificio().getNombre();
+                }
+                return new SimpleStringProperty("Depto #" + depto.getNumero() + edificioInfo);
+            }
+            return new SimpleStringProperty(v.getDireccion());
+        });
         numPropiedadesColumn.setCellValueFactory(cellData ->
                 new SimpleIntegerProperty(personaController.obtenerNumeroDePropiedades(cellData.getValue())).asObject()
         );
 
+        // 🔹 Inicializar ComboBox de filtrado
+        filtroComboBox.setItems(FXCollections.observableArrayList(
+            "ID",
+            "Nombre",
+            "Apellidos",
+            "RFC",
+            "Edad",
+            "Jefe de Familia",
+            "Vivienda",
+            "N. Prop."
+        ));
+
+        // 🔹 Listener para filtrar
+        filtroTextField.textProperty().addListener((observable, oldValue, newValue) -> filtrarTabla());
+        filtroComboBox.valueProperty().addListener((observable, oldValue, newValue) -> filtrarTabla());
+
         // Configurar ComboBox de familias
         configurarFamiliaComboBox();
+        configurarViviendaComboBox();
         loadFamilias();
-        loadPersonas();
+        loadViviendas();
+        // loadPersonas(); // Eliminado el llamado automático a loadPersonas
 
         // 🔹 Estado inicial de botones
         crearButton.setDisable(false);
@@ -94,6 +159,75 @@ public class PersonaViewController {
         });
     }
 
+    private void filtrarTabla() {
+        String filtroAtributo = filtroComboBox.getValue();
+        String filtroTexto = filtroTextField.getText();
+
+        if (filtroAtributo == null || filtroTexto == null || filtroTexto.trim().isEmpty()) {
+            personaTable.setItems(todasLasPersonas);
+            return;
+        }
+
+        ObservableList<Persona> personasFiltradas = FXCollections.observableArrayList();
+        String textoMinusculas = filtroTexto.toLowerCase().trim();
+
+        for (Persona persona : todasLasPersonas) {
+            boolean coincide = false;
+
+            switch (filtroAtributo) {
+                case "ID":
+                    coincide = String.valueOf(persona.getId()).contains(textoMinusculas);
+                    break;
+                case "Nombre":
+                    coincide = persona.getNombre() != null &&
+                              persona.getNombre().toLowerCase().contains(textoMinusculas);
+                    break;
+                case "Apellidos":
+                    Familia f = persona.getFamilia();
+                    coincide = f != null && f.getApellidos() != null &&
+                              f.getApellidos().toLowerCase().contains(textoMinusculas);
+                    break;
+                case "RFC":
+                    coincide = persona.getRfc() != null &&
+                              persona.getRfc().toLowerCase().contains(textoMinusculas);
+                    break;
+                case "Edad":
+                    coincide = String.valueOf(persona.getEdad()).contains(textoMinusculas);
+                    break;
+                case "Jefe de Familia":
+                    String esJefe = persona.isEsJefeDeFamilia() ? "si" : "no";
+                    coincide = esJefe.contains(textoMinusculas);
+                    break;
+                case "Vivienda":
+                    Vivienda v = persona.getVivienda();
+                    if (v != null) {
+                        if (v instanceof CasaUnifamiliar) {
+                            CasaUnifamiliar casa = (CasaUnifamiliar) v;
+                            coincide = casa.getDireccion() != null &&
+                                      casa.getDireccion().toLowerCase().contains(textoMinusculas);
+                        } else if (v instanceof Departamento) {
+                            Departamento depto = (Departamento) v;
+                            coincide = (depto.getNumero() != null &&
+                                      depto.getNumero().toLowerCase().contains(textoMinusculas)) ||
+                                      (depto.getEdificio() != null && depto.getEdificio().getNombre() != null &&
+                                      depto.getEdificio().getNombre().toLowerCase().contains(textoMinusculas));
+                        }
+                    }
+                    break;
+                case "N. Prop.":
+                    int numProp = personaController.obtenerNumeroDePropiedades(persona);
+                    coincide = String.valueOf(numProp).contains(textoMinusculas);
+                    break;
+            }
+
+            if (coincide) {
+                personasFiltradas.add(persona);
+            }
+        }
+
+        personaTable.setItems(personasFiltradas);
+    }
+
     private void configurarFamiliaComboBox() {
         familiaComboBox.setConverter(new StringConverter<Familia>() {
             @Override
@@ -111,6 +245,52 @@ public class PersonaViewController {
         });
     }
 
+    private void configurarViviendaComboBox() {
+        viviendaComboBox.setConverter(new StringConverter<Vivienda>() {
+            @Override
+            public String toString(Vivienda vivienda) {
+                if (vivienda == null) {
+                    return null;
+                }
+                if (vivienda instanceof CasaUnifamiliar) {
+                    CasaUnifamiliar casa = (CasaUnifamiliar) vivienda;
+                    return "Casa: " + casa.getDireccion() + " (Clave: " + casa.getNumeroExterior() + ")";
+                } else if (vivienda instanceof Departamento) {
+                    Departamento depto = (Departamento) vivienda;
+                    String edificioInfo = "";
+                    if (depto.getEdificio() != null) {
+                        edificioInfo = " - Edificio: " + depto.getEdificio().getNombre();
+                    }
+                    return "Depto #" + depto.getNumero() + ": " + depto.getDireccion() + edificioInfo + " (Clave: " + depto.getNumeroExterior() + ")";
+                }
+                return vivienda.getDireccion();
+            }
+
+            @Override
+            public Vivienda fromString(String string) {
+                return null;
+            }
+        });
+    }
+
+    private void loadViviendas() {
+        List<Vivienda> viviendas = new ArrayList<>();
+
+        // Cargar todas las casas unifamiliares
+        List<CasaUnifamiliar> casas = casaUnifamiliarController.obtenerTodasLasCasas();
+        if (casas != null) {
+            viviendas.addAll(casas);
+        }
+
+        // Cargar todos los departamentos
+        List<Departamento> departamentos = departamentoController.obtenerTodosLosDepartamentos();
+        if (departamentos != null) {
+            viviendas.addAll(departamentos);
+        }
+
+        viviendaComboBox.getItems().setAll(viviendas);
+    }
+
     private void loadFamilias() {
         List<Familia> familias = familiaController.obtenerTodasLasFamilias();
         familiaComboBox.getItems().setAll(familias);
@@ -118,7 +298,8 @@ public class PersonaViewController {
 
     private void loadPersonas() {
         List<Persona> personas = personaController.obtenerTodasLasPersonas();
-        personaTable.getItems().setAll(personas);
+        todasLasPersonas.setAll(personas);
+        personaTable.setItems(todasLasPersonas);
     }
 
     @FXML
@@ -148,6 +329,12 @@ public class PersonaViewController {
                 Integer.parseInt(edadField.getText()),
                 familiaSeleccionada
         );
+
+        // Asignar la vivienda seleccionada
+        Vivienda viviendaSeleccionada = viviendaComboBox.getValue();
+        if (viviendaSeleccionada != null) {
+            persona.setVivienda(viviendaSeleccionada);
+        }
 
         personaController.crearPersona(persona);
         loadPersonas();
@@ -189,6 +376,10 @@ public class PersonaViewController {
             selectedPersona.setEsJefeDeFamilia(esJefeDeFamiliaCheckBox.isSelected());
             selectedPersona.setFamilia(familiaSeleccionada);
 
+            // Asignar la vivienda seleccionada
+            Vivienda viviendaSeleccionada = viviendaComboBox.getValue();
+            selectedPersona.setVivienda(viviendaSeleccionada);
+
             personaController.actualizarPersona(selectedPersona);
             loadPersonas();
             clearFields();
@@ -222,10 +413,19 @@ public class PersonaViewController {
         clearFields();
         personaTable.getSelectionModel().clearSelection();
 
+        // 🔹 Limpiar filtros
+        filtroComboBox.getSelectionModel().clearSelection();
+        filtroTextField.clear();
+
         // Restaurar botones
         crearButton.setDisable(false);
         actualizarButton.setDisable(true);
         eliminarButton.setDisable(true);
+    }
+
+    @FXML
+    private void handleListar() {
+        loadPersonas();
     }
 
     private void onTableSelection(Persona selectedPersona) {
@@ -238,6 +438,12 @@ public class PersonaViewController {
             familiaComboBox.setValue(selectedPersona.getFamilia());
         } else {
             familiaComboBox.setValue(null);
+        }
+
+        if (selectedPersona.getVivienda() != null) {
+            viviendaComboBox.setValue(selectedPersona.getVivienda());
+        } else {
+            viviendaComboBox.setValue(null);
         }
     }
 
@@ -281,5 +487,43 @@ public class PersonaViewController {
         rfcField.clear();
         edadField.clear();
         esJefeDeFamiliaCheckBox.setSelected(false);
+        viviendaComboBox.setValue(null);
+
+        // Forzar refresco visual de ComboBox
+        familiaComboBox.setButtonCell(new ListCell<Familia>() {
+            @Override
+            protected void updateItem(Familia item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText("Seleccione familia");
+                } else {
+                    setText(item.getApellidos() + " (ID: " + item.getId() + ")");
+                }
+            }
+        });
+
+        viviendaComboBox.setButtonCell(new ListCell<Vivienda>() {
+            @Override
+            protected void updateItem(Vivienda item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText("Seleccione vivienda");
+                } else {
+                    if (item instanceof CasaUnifamiliar) {
+                        CasaUnifamiliar casa = (CasaUnifamiliar) item;
+                        setText("Casa: " + casa.getDireccion() + " (Clave: " + casa.getNumeroExterior() + ")");
+                    } else if (item instanceof Departamento) {
+                        Departamento depto = (Departamento) item;
+                        String edificioInfo = "";
+                        if (depto.getEdificio() != null) {
+                            edificioInfo = " - Edificio: " + depto.getEdificio().getNombre();
+                        }
+                        setText("Depto #" + depto.getNumero() + ": " + depto.getDireccion() + edificioInfo + " (Clave: " + depto.getNumeroExterior() + ")");
+                    } else {
+                        setText(item.getDireccion());
+                    }
+                }
+            }
+        });
     }
 }

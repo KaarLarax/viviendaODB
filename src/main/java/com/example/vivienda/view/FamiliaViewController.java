@@ -6,6 +6,8 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 import java.util.List;
 
@@ -30,8 +32,17 @@ public class FamiliaViewController {
     private Button eliminarButton;
     @FXML
     private Button limpiarButton;
+    @FXML
+    private Button listarButton;
+
+    // 🔹 Filtrado
+    @FXML
+    private ComboBox<String> filtroComboBox;
+    @FXML
+    private TextField filtroTextField;
 
     private final FamiliaController familiaController = new FamiliaController();
+    private ObservableList<Familia> todasLasFamilias = FXCollections.observableArrayList();
 
     @FXML
     public void initialize() {
@@ -41,7 +52,16 @@ public class FamiliaViewController {
                 new SimpleIntegerProperty(familiaController.obtenerNumeroMiembros(cellData.getValue())).asObject()
         );
 
-        loadFamilias();
+        // 🔹 Inicializar ComboBox de filtrado
+        filtroComboBox.setItems(FXCollections.observableArrayList(
+            "ID",
+            "Apellidos",
+            "Nº Miembros"
+        ));
+
+        // 🔹 Listener para filtrar
+        filtroTextField.textProperty().addListener((observable, oldValue, newValue) -> filtrarTabla());
+        filtroComboBox.valueProperty().addListener((observable, oldValue, newValue) -> filtrarTabla());
 
         // Estado inicial de botones
         crearButton.setDisable(false);
@@ -63,9 +83,47 @@ public class FamiliaViewController {
         });
     }
 
+    private void filtrarTabla() {
+        String filtroAtributo = filtroComboBox.getValue();
+        String filtroTexto = filtroTextField.getText();
+
+        if (filtroAtributo == null || filtroTexto == null || filtroTexto.trim().isEmpty()) {
+            familiaTable.setItems(todasLasFamilias);
+            return;
+        }
+
+        ObservableList<Familia> familiasFiltradas = FXCollections.observableArrayList();
+        String textoMinusculas = filtroTexto.toLowerCase().trim();
+
+        for (Familia familia : todasLasFamilias) {
+            boolean coincide = false;
+
+            switch (filtroAtributo) {
+                case "ID":
+                    coincide = String.valueOf(familia.getId()).contains(textoMinusculas);
+                    break;
+                case "Apellidos":
+                    coincide = familia.getApellidos() != null &&
+                              familia.getApellidos().toLowerCase().contains(textoMinusculas);
+                    break;
+                case "Nº Miembros":
+                    int numMiembros = familiaController.obtenerNumeroMiembros(familia);
+                    coincide = String.valueOf(numMiembros).contains(textoMinusculas);
+                    break;
+            }
+
+            if (coincide) {
+                familiasFiltradas.add(familia);
+            }
+        }
+
+        familiaTable.setItems(familiasFiltradas);
+    }
+
     private void loadFamilias() {
         List<Familia> familias = familiaController.obtenerTodasLasFamilias();
-        familiaTable.getItems().setAll(familias);
+        todasLasFamilias.setAll(familias);
+        familiaTable.setItems(todasLasFamilias);
     }
 
     @FXML
@@ -162,9 +220,18 @@ public class FamiliaViewController {
         clearFields();
         familiaTable.getSelectionModel().clearSelection();
 
+        // 🔹 Limpiar filtros
+        filtroComboBox.getSelectionModel().clearSelection();
+        filtroTextField.clear();
+
         crearButton.setDisable(false);
         actualizarButton.setDisable(true);
         eliminarButton.setDisable(true);
+    }
+
+    @FXML
+    private void handleListar() {
+        loadFamilias();
     }
 
     private void onTableSelection(Familia selectedFamilia) {
@@ -194,4 +261,3 @@ public class FamiliaViewController {
         apellidosField.clear();
     }
 }
-

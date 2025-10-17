@@ -5,12 +5,13 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<GridPane alignment="CENTER" hgap="10" vgap="10" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/21" fx:controller="com.example.vivienda.view.FamiliaViewController">
+<GridPane alignment="CENTER" hgap="10" vgap="10" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/21" fx:controller="com.example.vivienda.view.FamiliaViewController" style="-fx-padding: 20;">
     <Label text="Apellidos:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
     <TextField fx:id="apellidosField" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
@@ -19,16 +20,23 @@
         <Button fx:id="actualizarButton" onAction="#handleUpdate" text="Actualizar" />
         <Button fx:id="eliminarButton" onAction="#handleDelete" text="Eliminar" />
         <Button fx:id="limpiarButton" onAction="#handleLimpiar" text="Limpiar" />
+        <Button fx:id="listarButton" onAction="#handleListar" text="Listar" />
     </HBox>
 
-    <TableView fx:id="familiaTable" prefHeight="300.0" GridPane.columnSpan="2" GridPane.columnIndex="0" GridPane.rowIndex="2">
+    <!-- Sección de filtrado -->
+    <Label text="Filtrar por:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+    <HBox spacing="10" GridPane.columnSpan="2" GridPane.columnIndex="0" GridPane.rowIndex="3">
+        <ComboBox fx:id="filtroComboBox" prefWidth="150.0" promptText="Seleccione atributo" />
+        <TextField fx:id="filtroTextField" prefWidth="200.0" promptText="Ingrese valor a buscar" />
+    </HBox>
+
+    <TableView fx:id="familiaTable" prefHeight="200.0" GridPane.columnSpan="2" GridPane.columnIndex="0" GridPane.rowIndex="4">
         <columns>
             <TableColumn fx:id="idColumn" prefWidth="100.0" text="ID" />
             <TableColumn fx:id="apellidosColumn" prefWidth="250.0" text="Apellidos" />
-            <TableColumn fx:id="numMiembrosColumn" prefWidth="150.0" text="N. Miembros" />
+            <TableColumn fx:id="numMiembrosColumn" prefWidth="150.0" text="Nº Miembros" />
         </columns>
     </TableView>
-
     <columnConstraints>
         <ColumnConstraints />
         <ColumnConstraints />
@@ -37,6 +45,7 @@
         <RowConstraints />
         <RowConstraints />
         <RowConstraints />
+        <RowConstraints />
+        <RowConstraints />
     </rowConstraints>
 </GridPane>
-

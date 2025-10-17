@@ -5,6 +5,7 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
@@ -20,8 +21,17 @@
         <Button fx:id="actualizarButton" onAction="#handleUpdate" text="Actualizar" />
         <Button fx:id="eliminarButton" onAction="#handleDelete" text="Eliminar" />
         <Button fx:id="limpiarButton" onAction="#handleLimpiar" text="Limpiar" />
+        <Button fx:id="listarButton" onAction="#handleListar" text="Listar" />
     </HBox>
-    <TableView fx:id="coloniaTable" prefHeight="200.0" GridPane.columnSpan="2" GridPane.columnIndex="0" GridPane.rowIndex="3">
+
+    <!-- Sección de filtrado -->
+    <Label text="Filtrar por:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+    <HBox spacing="10" GridPane.columnSpan="2" GridPane.columnIndex="0" GridPane.rowIndex="4">
+        <ComboBox fx:id="filtroComboBox" prefWidth="150.0" promptText="Seleccione atributo" />
+        <TextField fx:id="filtroTextField" prefWidth="200.0" promptText="Ingrese valor a buscar" />
+    </HBox>
+
+    <TableView fx:id="coloniaTable" prefHeight="200.0" GridPane.columnSpan="2" GridPane.columnIndex="0" GridPane.rowIndex="5">
         <columns>
             <TableColumn fx:id="idColumn" prefWidth="60.0" text="ID" />
             <TableColumn fx:id="nombreColumn" prefWidth="150.0" text="Nombre" />
@@ -34,6 +44,8 @@
         <ColumnConstraints />
     </columnConstraints>
     <rowConstraints>
+        <RowConstraints />
+        <RowConstraints />
         <RowConstraints />
         <RowConstraints />
         <RowConstraints />

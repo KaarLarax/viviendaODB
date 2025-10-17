@@ -15,7 +15,7 @@ import javafx.beans.property.SimpleStringProperty;
 public class CasaUnifamiliarViewController {
     @FXML private TextField txtDireccion;
     @FXML private TextField txtSuperficie;
-    @FXML private TextField txtClaveCatastral;
+    @FXML private TextField txtNumeroExterior;
     @FXML private TextField txtNumeroPisos;
     @FXML private ComboBox<Colonia> comboColonia;
     @FXML private ComboBox<Persona> comboPropietario;
@@ -23,18 +23,27 @@ public class CasaUnifamiliarViewController {
     @FXML private TableColumn<CasaUnifamiliar, Long> idColumn;
     @FXML private TableColumn<CasaUnifamiliar, String> direccionColumn;
     @FXML private TableColumn<CasaUnifamiliar, String> superficieColumn;
-    @FXML private TableColumn<CasaUnifamiliar, String> claveCatastralColumn;
+    @FXML private TableColumn<CasaUnifamiliar, String> numeroExteriorColumn;
     @FXML private TableColumn<CasaUnifamiliar, Integer> numeroPisosColumn;
     @FXML private TableColumn<CasaUnifamiliar, String> coloniaColumn;
     @FXML private TableColumn<CasaUnifamiliar, String> propietarioColumn;
+    @FXML private TableColumn<CasaUnifamiliar, Integer> numeroHabitantesColumn;
     @FXML private Button btnAgregar;
     @FXML private Button btnEditar;
     @FXML private Button btnEliminar;
     @FXML private Button btnLimpiar;
+    @FXML private Button btnListar;
+
+    // 🔹 Filtrado
+    @FXML
+    private ComboBox<String> filtroComboBox;
+    @FXML
+    private TextField filtroTextField;
 
     private final CasaUnifamiliarController casaDAO = new CasaUnifamiliarController();
     private final ColoniaController coloniaDAO = new ColoniaController();
     private final PersonaController personaDAO = new PersonaController();
+    private ObservableList<CasaUnifamiliar> todasLasCasas = FXCollections.observableArrayList();
 
     @FXML
     public void initialize() {
@@ -42,7 +51,7 @@ public class CasaUnifamiliarViewController {
         idColumn.setCellValueFactory(cellData -> new javafx.beans.property.SimpleLongProperty(cellData.getValue().getId()).asObject());
         direccionColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getDireccion()));
         superficieColumn.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().getSuperficie())));
-        claveCatastralColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getClaveCatastral()));
+        numeroExteriorColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getNumeroExterior()));
         numeroPisosColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().getNumeroPisos()));
         coloniaColumn.setCellValueFactory(data -> {
             Colonia colonia = data.getValue().getColonia();
@@ -53,8 +62,30 @@ public class CasaUnifamiliarViewController {
             return new SimpleStringProperty(propietario != null ? propietario.toString() : "");
         });
 
+        // Columna de número de habitantes
+        numeroHabitantesColumn.setCellValueFactory(data -> {
+            CasaUnifamiliar casa = data.getValue();
+            int numHabitantes = casa.getHabitantes() != null ? casa.getHabitantes().size() : 0;
+            return new javafx.beans.property.SimpleObjectProperty<>(numHabitantes);
+        });
+
+        // 🔹 Inicializar ComboBox de filtrado
+        filtroComboBox.setItems(FXCollections.observableArrayList(
+            "ID",
+            "Dirección",
+            "Superficie",
+            "Número Exterior",
+            "Nº Pisos",
+            "Colonia",
+            "Propietario",
+            "Nº Habitantes"
+        ));
+
+        // 🔹 Listener para filtrar
+        filtroTextField.textProperty().addListener((observable, oldValue, newValue) -> filtrarTabla());
+        filtroComboBox.valueProperty().addListener((observable, oldValue, newValue) -> filtrarTabla());
+
         // Cargar datos
-        loadCasas();
         comboColonia.setItems(FXCollections.observableArrayList(coloniaDAO.obtenerTodasLasColonias()));
         comboPropietario.setItems(FXCollections.observableArrayList(personaDAO.obtenerTodasLasPersonas()));
 
@@ -97,15 +128,78 @@ public class CasaUnifamiliarViewController {
         });
     }
 
+    private void filtrarTabla() {
+        String filtroAtributo = filtroComboBox.getValue();
+        String filtroTexto = filtroTextField.getText();
+
+        if (filtroAtributo == null || filtroTexto == null || filtroTexto.trim().isEmpty()) {
+            casaUnifamiliarTable.setItems(todasLasCasas);
+            return;
+        }
+
+        ObservableList<CasaUnifamiliar> casasFiltradas = FXCollections.observableArrayList();
+        String textoMinusculas = filtroTexto.toLowerCase().trim();
+
+        for (CasaUnifamiliar casa : todasLasCasas) {
+            boolean coincide = false;
+
+            switch (filtroAtributo) {
+                case "ID":
+                    coincide = String.valueOf(casa.getId()).contains(textoMinusculas);
+                    break;
+                case "Dirección":
+                    coincide = casa.getDireccion() != null &&
+                              casa.getDireccion().toLowerCase().contains(textoMinusculas);
+                    break;
+                case "Superficie":
+                    coincide = String.valueOf(casa.getSuperficie()).contains(textoMinusculas);
+                    break;
+                case "Número Exterior":
+                    coincide = casa.getNumeroExterior() != null &&
+                              casa.getNumeroExterior().toLowerCase().contains(textoMinusculas);
+                    break;
+                case "Nº Pisos":
+                    coincide = String.valueOf(casa.getNumeroPisos()).contains(textoMinusculas);
+                    break;
+                case "Colonia":
+                    Colonia c = casa.getColonia();
+                    coincide = c != null && c.getNombre() != null &&
+                              c.getNombre().toLowerCase().contains(textoMinusculas);
+                    break;
+                case "Propietario":
+                    Persona p = casa.getPropietario();
+                    if (p != null) {
+                        String nombreCompleto = p.getNombre() != null ? p.getNombre() : "";
+                        if (p.getFamilia() != null && p.getFamilia().getApellidos() != null) {
+                            nombreCompleto += " " + p.getFamilia().getApellidos();
+                        }
+                        coincide = nombreCompleto.toLowerCase().contains(textoMinusculas);
+                    }
+                    break;
+                case "Nº Habitantes":
+                    int numHabitantes = casa.getHabitantes() != null ? casa.getHabitantes().size() : 0;
+                    coincide = String.valueOf(numHabitantes).contains(textoMinusculas);
+                    break;
+            }
+
+            if (coincide) {
+                casasFiltradas.add(casa);
+            }
+        }
+
+        casaUnifamiliarTable.setItems(casasFiltradas);
+    }
+
     private void loadCasas() {
-        casaUnifamiliarTable.setItems(FXCollections.observableArrayList(casaDAO.obtenerTodasLasCasas()));
+        todasLasCasas.setAll(casaDAO.obtenerTodasLasCasas());
+        casaUnifamiliarTable.setItems(todasLasCasas);
     }
 
     private void mostrarCasa(CasaUnifamiliar casa) {
         if (casa != null) {
             txtDireccion.setText(casa.getDireccion());
             txtSuperficie.setText(String.valueOf(casa.getSuperficie()));
-            txtClaveCatastral.setText(casa.getClaveCatastral());
+            txtNumeroExterior.setText(casa.getNumeroExterior());
             txtNumeroPisos.setText(String.valueOf(casa.getNumeroPisos()));
             comboColonia.setValue(casa.getColonia());
             comboPropietario.setValue(casa.getPropietario());
@@ -116,26 +210,29 @@ public class CasaUnifamiliarViewController {
     private void onAgregar() {
         if (!validarCampos()) return;
 
-        // Validar clave catastral duplicada
-        String claveIngresada = txtClaveCatastral.getText().trim();
-        boolean claveDuplicada = casaDAO.obtenerTodasLasCasas().stream()
-                .anyMatch(c -> c.getClaveCatastral() != null && c.getClaveCatastral().trim().equals(claveIngresada));
+        // Validar número exterior duplicado en la misma dirección
+        String direccionIngresada = txtDireccion.getText().trim();
+        String numeroExteriorIngresado = txtNumeroExterior.getText().trim();
 
-        if (claveDuplicada) {
-            mostrarAlerta("Error al crear casa", "Clave Catastral duplicada",
-                    "Ya existe una casa con la clave catastral ingresada.");
+        boolean numeroDuplicado = casaDAO.obtenerTodasLasCasas().stream()
+                .anyMatch(c -> c.getDireccion() != null && c.getDireccion().trim().equalsIgnoreCase(direccionIngresada) &&
+                              c.getNumeroExterior() != null && c.getNumeroExterior().trim().equals(numeroExteriorIngresado));
+
+        if (numeroDuplicado) {
+            mostrarAlerta("Error al crear casa", "Número Exterior duplicado",
+                    "Ya existe una vivienda con el número exterior " + numeroExteriorIngresado + " en la dirección " + direccionIngresada + ".");
             return;
         }
 
         try {
             String direccion = txtDireccion.getText().trim();
             double superficie = Double.parseDouble(txtSuperficie.getText().trim());
-            String clave = txtClaveCatastral.getText().trim();
+            String numeroExterior = txtNumeroExterior.getText().trim();
             int pisos = Integer.parseInt(txtNumeroPisos.getText().trim());
             Colonia colonia = comboColonia.getValue();
             Persona propietario = comboPropietario.getValue();
 
-            CasaUnifamiliar casa = new CasaUnifamiliar(direccion, superficie, clave, propietario, colonia, pisos);
+            CasaUnifamiliar casa = new CasaUnifamiliar(direccion, superficie, numeroExterior, propietario, colonia, pisos);
             // Mantener consistencia bidireccional: que la persona propietaria apunte a esta vivienda
             if (propietario != null) {
                 propietario.setVivienda(casa);
@@ -145,9 +242,9 @@ public class CasaUnifamiliarViewController {
             postAction();
         } catch (javax.persistence.PersistenceException e) {
             e.printStackTrace();
-            if (e.getMessage() != null && e.getMessage().contains("Unique constraint") && e.getMessage().contains("claveCatastral")) {
-                mostrarAlerta("Error al crear casa", "Clave Catastral duplicada",
-                        "La clave catastral '" + claveIngresada + "' ya existe en la base de datos.");
+            if (e.getMessage() != null && e.getMessage().contains("Unique constraint")) {
+                mostrarAlerta("Error al crear casa", "Número Exterior duplicado",
+                        "El número exterior '" + numeroExteriorIngresado + "' ya existe en la dirección '" + direccionIngresada + "'.");
             } else {
                 mostrarAlerta("Error al agregar", "Error inesperado", "Ocurrió un error al crear la casa: " + e.getMessage());
             }
@@ -163,18 +260,20 @@ public class CasaUnifamiliarViewController {
         if (seleccionada == null) return;
         if (!validarCampos()) return;
 
-        // Validar clave catastral duplicada (excepto la actual)
-        String claveIngresada = txtClaveCatastral.getText().trim();
-        String claveOriginal = seleccionada.getClaveCatastral() != null ? seleccionada.getClaveCatastral().trim() : "";
+        // Validar número exterior duplicado (excepto la actual)
+        String direccionIngresada = txtDireccion.getText().trim();
+        String numeroExteriorIngresado = txtNumeroExterior.getText().trim();
+        String direccionOriginal = seleccionada.getDireccion() != null ? seleccionada.getDireccion().trim() : "";
+        String numeroExteriorOriginal = seleccionada.getNumeroExterior() != null ? seleccionada.getNumeroExterior().trim() : "";
 
-        if (!claveOriginal.equals(claveIngresada)) {
-            boolean claveDuplicada = casaDAO.obtenerTodasLasCasas().stream()
-                    .anyMatch(c -> c.getClaveCatastral() != null &&
-                                   c.getClaveCatastral().trim().equals(claveIngresada) &&
+        if (!direccionOriginal.equalsIgnoreCase(direccionIngresada) || !numeroExteriorOriginal.equals(numeroExteriorIngresado)) {
+            boolean numeroDuplicado = casaDAO.obtenerTodasLasCasas().stream()
+                    .anyMatch(c -> c.getDireccion() != null && c.getDireccion().trim().equalsIgnoreCase(direccionIngresada) &&
+                                   c.getNumeroExterior() != null && c.getNumeroExterior().trim().equals(numeroExteriorIngresado) &&
                                    c.getId() != seleccionada.getId());
-            if (claveDuplicada) {
-                mostrarAlerta("Error al actualizar casa", "Clave Catastral duplicada",
-                        "Ya existe una casa con la clave catastral ingresada.");
+            if (numeroDuplicado) {
+                mostrarAlerta("Error al actualizar casa", "Número Exterior duplicado",
+                        "Ya existe una vivienda con el número exterior " + numeroExteriorIngresado + " en la dirección " + direccionIngresada + ".");
                 return;
             }
         }
@@ -182,7 +281,7 @@ public class CasaUnifamiliarViewController {
         try {
             seleccionada.setDireccion(txtDireccion.getText().trim());
             seleccionada.setSuperficie(Double.parseDouble(txtSuperficie.getText().trim()));
-            seleccionada.setClaveCatastral(txtClaveCatastral.getText().trim());
+            seleccionada.setNumeroExterior(txtNumeroExterior.getText().trim());
             seleccionada.setNumeroPisos(Integer.parseInt(txtNumeroPisos.getText().trim()));
             seleccionada.setColonia(comboColonia.getValue());
             seleccionada.setPropietario(comboPropietario.getValue());
@@ -194,9 +293,9 @@ public class CasaUnifamiliarViewController {
             postAction();
         } catch (javax.persistence.PersistenceException e) {
             e.printStackTrace();
-            if (e.getMessage() != null && e.getMessage().contains("Unique constraint") && e.getMessage().contains("claveCatastral")) {
-                mostrarAlerta("Error al actualizar casa", "Clave Catastral duplicada",
-                        "La clave catastral '" + claveIngresada + "' ya existe en la base de datos.");
+            if (e.getMessage() != null && e.getMessage().contains("Unique constraint")) {
+                mostrarAlerta("Error al actualizar casa", "Número Exterior duplicado",
+                        "El número exterior '" + numeroExteriorIngresado + "' ya existe en la dirección '" + direccionIngresada + "'.");
             } else {
                 mostrarAlerta("Error al editar", "Error inesperado", "Ocurrió un error al actualizar la casa: " + e.getMessage());
             }
@@ -217,7 +316,49 @@ public class CasaUnifamiliarViewController {
 
     @FXML
     private void onLimpiar() {
-        limpiarCampos();
+        txtDireccion.clear();
+        txtSuperficie.clear();
+        txtNumeroExterior.clear();
+        txtNumeroPisos.clear();
+        comboColonia.setValue(null);
+        comboPropietario.setValue(null);
+        casaUnifamiliarTable.getSelectionModel().clearSelection();
+
+        // 🔹 Limpiar filtros
+        filtroComboBox.getSelectionModel().clearSelection();
+        filtroTextField.clear();
+
+        setButtonsState(true, false, false);
+
+        // Forzar refresco visual de ComboBox
+        comboColonia.setButtonCell(new javafx.scene.control.ListCell<Colonia>() {
+            @Override
+            protected void updateItem(Colonia item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText("Seleccione colonia");
+                } else {
+                    setText(item.toString());
+                }
+            }
+        });
+
+        comboPropietario.setButtonCell(new javafx.scene.control.ListCell<Persona>() {
+            @Override
+            protected void updateItem(Persona item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText("Seleccione propietario");
+                } else {
+                    setText(item.toString());
+                }
+            }
+        });
+    }
+
+    @FXML
+    private void onListar() {
+        loadCasas();
     }
 
     @FXML
@@ -239,7 +380,7 @@ public class CasaUnifamiliarViewController {
     private void limpiarCampos() {
         txtDireccion.clear();
         txtSuperficie.clear();
-        txtClaveCatastral.clear();
+        txtNumeroExterior.clear();
         txtNumeroPisos.clear();
         comboColonia.getSelectionModel().clearSelection();
         comboColonia.setValue(null);
@@ -283,7 +424,7 @@ public class CasaUnifamiliarViewController {
     private boolean validarCampos() {
         // Validar campos vacíos
         if (txtDireccion.getText().trim().isEmpty() || txtSuperficie.getText().trim().isEmpty() ||
-                txtClaveCatastral.getText().trim().isEmpty() || txtNumeroPisos.getText().trim().isEmpty()) {
+                txtNumeroExterior.getText().trim().isEmpty() || txtNumeroPisos.getText().trim().isEmpty()) {
             mostrarAlerta("Campos incompletos", "Faltan datos",
                     "Todos los campos de texto son obligatorios.");
             return false;
